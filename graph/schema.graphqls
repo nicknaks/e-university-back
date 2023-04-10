@@ -1,0 +1,71 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Query {
+  faculties: [Faculty!]!
+  groups(filter: groupsFilter): [Group!]
+}
+
+# фильтры
+input groupsFilter {
+  departmentID: String
+  course: Int
+}
+
+# типы
+type Faculty {
+  id: String!
+  number: String!
+  name: String!
+  departments: [Department!]
+}
+
+type Department {
+  id: String!
+  number: String!
+  name: String!
+  faculty_id: String!
+  groups: [Group!]
+}
+
+type Group {
+  id: String!
+  number: String!
+  course: Int!
+  students: [Student]!
+}
+
+type Student {
+  id: String!
+  name: String!
+  login: String!
+  number: String!
+}
+
+# Инпуты
+
+
+# Payloads
+
+type Todo {
+  id: ID!
+  text: String!
+  done: Boolean!
+  user: User!
+}
+
+type User {
+  id: ID!
+  name: String!
+}
+
+input NewTodo {
+  text: String!
+  userId: String!
+}
+
+type Mutation {
+  createTodo(input: NewTodo!): Todo!
+  createTodov(input: NewTodo!): Todo!
+}
