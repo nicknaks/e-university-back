@@ -15,7 +15,7 @@ import (
 	_ "github.com/lib/pq" // <------------ here
 )
 
-const defaultPort = "8080"
+const defaultPort = "8090"
 
 func main() {
 	port := os.Getenv("PORT")
@@ -51,7 +51,7 @@ func main() {
 	router.Handle("/", playground.Handler("Starwars", "/query"))
 	router.Handle("/query", srv)
 
-	err := http.ListenAndServe(":8080", router)
+	err := http.ListenAndServe(":8090", router)
 	if err != nil {
 		panic(err)
 	}
