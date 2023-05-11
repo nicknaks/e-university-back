@@ -42,6 +42,8 @@ type Lesson struct {
 	Cabinet       *string    `json:"cabinet"`
 	IsDenominator bool       `json:"isDenominator"`
 	IsNumerator   bool       `json:"isNumerator"`
+	Teacher       *Teacher   `json:"teacher"`
+	Group         *Group     `json:"group"`
 }
 
 type Student struct {

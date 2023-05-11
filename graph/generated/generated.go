@@ -36,6 +36,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Lesson() LessonResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
@@ -71,12 +72,14 @@ type ComplexityRoot struct {
 		Cabinet       func(childComplexity int) int
 		Couple        func(childComplexity int) int
 		Day           func(childComplexity int) int
+		Group         func(childComplexity int) int
 		GroupID       func(childComplexity int) int
 		ID            func(childComplexity int) int
 		IsDenominator func(childComplexity int) int
 		IsNumerator   func(childComplexity int) int
 		Name          func(childComplexity int) int
 		SubjectID     func(childComplexity int) int
+		Teacher       func(childComplexity int) int
 		TeacherID     func(childComplexity int) int
 		Type          func(childComplexity int) int
 	}
@@ -112,6 +115,10 @@ type ComplexityRoot struct {
 	}
 }
 
+type LessonResolver interface {
+	Teacher(ctx context.Context, obj *model.Lesson) (*model.Teacher, error)
+	Group(ctx context.Context, obj *model.Lesson) (*model.Group, error)
+}
 type MutationResolver interface {
 	Login(ctx context.Context, login string, password string) (bool, error)
 	Logout(ctx context.Context) (bool, error)
@@ -251,6 +258,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Lesson.Day(childComplexity), true
 
+	case "Lesson.group":
+		if e.complexity.Lesson.Group == nil {
+			break
+		}
+
+		return e.complexity.Lesson.Group(childComplexity), true
+
 	case "Lesson.groupID":
 		if e.complexity.Lesson.GroupID == nil {
 			break
@@ -292,6 +306,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Lesson.SubjectID(childComplexity), true
+
+	case "Lesson.teacher":
+		if e.complexity.Lesson.Teacher == nil {
+			break
+		}
+
+		return e.complexity.Lesson.Teacher(childComplexity), true
 
 	case "Lesson.teacherID":
 		if e.complexity.Lesson.TeacherID == nil {
@@ -501,6 +522,7 @@ var sources = []*ast.Source{
 # https://gqlgen.com/getting-started/
 
 directive @isAuthenticated on FIELD_DEFINITION
+directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 type Query {
     faculties: [Faculty!]!
@@ -508,6 +530,11 @@ type Query {
     schedule(filter: scheduleFilter!): [Lesson!]
     teachers(filter: teachersFilter): [Teacher!]
     mySchedule: [Lesson!] @isAuthenticated
+}
+
+type Mutation {
+    login(login: String!,password: String!): Boolean!
+    logout: Boolean!
 }
 
 # енамы
@@ -553,6 +580,8 @@ type Lesson {
     cabinet: String
     isDenominator: Boolean!
     isNumerator: Boolean!
+    teacher: Teacher @goField(forceResolver: true)
+    group: Group @goField(forceResolver: true)
 }
 
 type Faculty {
@@ -593,14 +622,6 @@ type User {
     name: String!
 }
 
-
-type Mutation {
-    login(
-        login: String!,
-        password: String!
-    ): Boolean!
-    logout: Boolean!
-}
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -1554,6 +1575,70 @@ func (ec *executionContext) _Lesson_isNumerator(ctx context.Context, field graph
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Lesson_teacher(ctx context.Context, field graphql.CollectedField, obj *model.Lesson) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Lesson",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Lesson().Teacher(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Teacher)
+	fc.Result = res
+	return ec.marshalOTeacher2ᚖbackᚋgraphᚋmodelᚐTeacher(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Lesson_group(ctx context.Context, field graphql.CollectedField, obj *model.Lesson) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Lesson",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Lesson().Group(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Group)
+	fc.Result = res
+	return ec.marshalOGroup2ᚖbackᚋgraphᚋmodelᚐGroup(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3677,7 +3762,7 @@ func (ec *executionContext) _Lesson(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "type":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3687,7 +3772,7 @@ func (ec *executionContext) _Lesson(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "subjectID":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3697,7 +3782,7 @@ func (ec *executionContext) _Lesson(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3714,7 +3799,7 @@ func (ec *executionContext) _Lesson(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "day":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3724,7 +3809,7 @@ func (ec *executionContext) _Lesson(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "groupID":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3734,7 +3819,7 @@ func (ec *executionContext) _Lesson(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "teacherID":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3758,7 +3843,7 @@ func (ec *executionContext) _Lesson(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "isNumerator":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3768,8 +3853,42 @@ func (ec *executionContext) _Lesson(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = innerFunc(ctx)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "teacher":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Lesson_teacher(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "group":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Lesson_group(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5121,6 +5240,13 @@ func (ec *executionContext) marshalOGroup2ᚕᚖbackᚋgraphᚋmodelᚐGroupᚄ(
 	return ret
 }
 
+func (ec *executionContext) marshalOGroup2ᚖbackᚋgraphᚋmodelᚐGroup(ctx context.Context, sel ast.SelectionSet, v *model.Group) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Group(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -5290,6 +5416,13 @@ func (ec *executionContext) marshalOTeacher2ᚕᚖbackᚋgraphᚋmodelᚐTeacher
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalOTeacher2ᚖbackᚋgraphᚋmodelᚐTeacher(ctx context.Context, sel ast.SelectionSet, v *model.Teacher) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Teacher(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

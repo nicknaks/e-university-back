@@ -3,6 +3,7 @@
 # https://gqlgen.com/getting-started/
 
 directive @isAuthenticated on FIELD_DEFINITION
+directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 type Query {
     faculties: [Faculty!]!
@@ -10,6 +11,11 @@ type Query {
     schedule(filter: scheduleFilter!): [Lesson!]
     teachers(filter: teachersFilter): [Teacher!]
     mySchedule: [Lesson!] @isAuthenticated
+}
+
+type Mutation {
+    login(login: String!,password: String!): Boolean!
+    logout: Boolean!
 }
 
 # енамы
@@ -55,6 +61,8 @@ type Lesson {
     cabinet: String
     isDenominator: Boolean!
     isNumerator: Boolean!
+    teacher: Teacher @goField(forceResolver: true)
+    group: Group @goField(forceResolver: true)
 }
 
 type Faculty {
@@ -95,11 +103,3 @@ type User {
     name: String!
 }
 
-
-type Mutation {
-    login(
-        login: String!,
-        password: String!
-    ): Boolean!
-    logout: Boolean!
-}
