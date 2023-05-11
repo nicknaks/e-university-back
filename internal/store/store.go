@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -34,4 +35,29 @@ func getPostgres() *sql.DB {
 // Builder вернет squirrel SQL Builder обьект
 func (s *Storage) Builder() sq.StatementBuilderType {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+}
+
+func (db *Storage) Selectx(ctx context.Context, dest interface{}, sqlizer sq.Sqlizer) error {
+	stmt, args, err := sqlizer.ToSql()
+	if err != nil {
+		return err
+	}
+	return db.SelectContext(ctx, dest, stmt, args...)
+}
+
+func (db *Storage) Getx(ctx context.Context, dest interface{}, sqlizer sq.Sqlizer) error {
+	stmt, args, err := sqlizer.ToSql()
+	if err != nil {
+		return err
+	}
+	return db.GetContext(ctx, dest, stmt, args...)
+}
+
+func (db *Storage) Exec(ctx context.Context, sqlizer sq.Sqlizer) error {
+	stmt, args, err := sqlizer.ToSql()
+	if err != nil {
+		return err
+	}
+	_, err = db.ExecContext(ctx, stmt, args...)
+	return err
 }

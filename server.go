@@ -3,16 +3,18 @@ package main
 import (
 	"back/graph"
 	"back/graph/generated"
+	"back/internal/auth_service"
+	"back/pkg/parser"
+	"context"
+	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	"github.com/gorilla/websocket"
+	_ "github.com/lib/pq" // <------------ here
 	"github.com/rs/cors"
 	"net/http"
 	"os"
-
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
-	_ "github.com/lib/pq" // <------------ here
 )
 
 const defaultPort = "8090"
@@ -35,7 +37,12 @@ func main() {
 
 	resolver := graph.NewResolver()
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolver}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
+		Resolvers: resolver,
+		Directives: generated.DirectiveRoot{
+			IsAuthenticated: resolver.Storage.IsAuth,
+		},
+	}))
 
 	srv.AddTransport(&transport.Websocket{
 		Upgrader: websocket.Upgrader{
@@ -48,10 +55,36 @@ func main() {
 		},
 	})
 
+	router.Use(auth_service.InjectHTTPMiddleware())
 	router.Handle("/", playground.Handler("Starwars", "/query"))
 	router.Handle("/query", srv)
 
-	err := http.ListenAndServe(":8090", router)
+	data, err := parser.ParseFaculties(nil)
+	if err != nil {
+		panic(err)
+	}
+
+	data, err = parser.InitData(context.Background(), resolver.Storage, data)
+	if err != nil {
+		panic(err)
+	}
+
+	lessons, err := parser.ParseSchedule(nil, data)
+	if err != nil {
+		panic(err)
+	}
+
+	err = parser.ExtractTeachers(context.Background(), resolver.Storage, lessons)
+	if err != nil {
+		panic(err)
+	}
+
+	err = parser.InitUsers(context.Background(), resolver.Storage)
+	if err != nil {
+		panic(err)
+	}
+
+	err = http.ListenAndServe(":8090", router)
 	if err != nil {
 		panic(err)
 	}

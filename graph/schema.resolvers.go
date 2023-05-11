@@ -6,16 +6,44 @@ package graph
 import (
 	"back/graph/generated"
 	"back/graph/model"
+	"back/internal/auth_service"
+	"back/internal/models"
 	"context"
 	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/samber/lo"
 )
 
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) Login(ctx context.Context, login string, password string) (bool, error) {
+	token, err := r.Storage.GetToken(ctx, login, password)
+	if err != nil {
+		return false, err
+	}
+
+	httpContext := auth_service.GetHttpContext(ctx)
+
+	http.SetCookie(httpContext.W, &http.Cookie{
+		Name:    "token",
+		Value:   token,
+		Expires: time.Now().Add(time.Hour * 24),
+	})
+
+	// ставим куки
+	return true, nil
 }
 
-func (r *mutationResolver) CreateTodov(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
+	httpContext := auth_service.GetHttpContext(ctx)
+
+	http.SetCookie(httpContext.W, &http.Cookie{
+		Name:    "token",
+		Value:   "",
+		Expires: time.Now().Add(time.Hour * (-1)),
+	})
+
+	return true, nil
 }
 
 func (r *queryResolver) Faculties(ctx context.Context) ([]*model.Faculty, error) {
@@ -49,6 +77,43 @@ func (r *queryResolver) Groups(ctx context.Context, filter *model.GroupsFilter) 
 	return r.Storage.ListGroups(ctx, filter)
 }
 
+func (r *queryResolver) Schedule(ctx context.Context, filter model.ScheduleFilter) ([]*model.Lesson, error) {
+	lessons, err := r.Storage.ListLessons(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("Storage.ListLessons err %w", err)
+	}
+
+	return models.ToLessons(lessons), nil
+}
+
+func (r *queryResolver) Teachers(ctx context.Context, filter *model.TeachersFilter) ([]*model.Teacher, error) {
+	lessons, err := r.Storage.ListTeachers(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("Storage.ListLessons err %w", err)
+	}
+
+	return models.ToTeachers(lessons), nil
+}
+
+func (r *queryResolver) MySchedule(ctx context.Context) ([]*model.Lesson, error) {
+	user := auth_service.GetUserFromContext(ctx)
+
+	filter := model.ScheduleFilter{}
+	switch user.UserType {
+	case 1:
+		filter.TeacherID = lo.ToPtr(user.OwnerID)
+	default:
+		panic(nil)
+	}
+
+	lessons, err := r.Storage.ListLessons(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("Storage.ListLessons err %w", err)
+	}
+
+	return models.ToLessons(lessons), nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
@@ -64,6 +129,6 @@ type queryResolver struct{ *Resolver }
 //   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
 //     it when you're done.
 //   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
+func (r *queryResolver) T(ctx context.Context) ([]*bool, error) {
 	panic(fmt.Errorf("not implemented"))
 }

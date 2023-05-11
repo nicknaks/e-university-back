@@ -2,11 +2,17 @@
 
 package model
 
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type Department struct {
 	ID        string   `json:"id"`
 	Number    string   `json:"number"`
 	Name      string   `json:"name"`
-	FacultyID string   `db:"faculty_id"`
+	FacultyID string   `json:"facultyID"`
 	Groups    []*Group `json:"groups"`
 }
 
@@ -24,9 +30,18 @@ type Group struct {
 	Students []*Student `json:"students"`
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type Lesson struct {
+	ID            string     `json:"id"`
+	Type          LessonType `json:"type"`
+	SubjectID     string     `json:"subjectID"`
+	Name          *string    `json:"name"`
+	Couple        int        `json:"couple"`
+	Day           int        `json:"day"`
+	GroupID       string     `json:"groupID"`
+	TeacherID     *string    `json:"teacherID"`
+	Cabinet       *string    `json:"cabinet"`
+	IsDenominator bool       `json:"isDenominator"`
+	IsNumerator   bool       `json:"isNumerator"`
 }
 
 type Student struct {
@@ -36,11 +51,9 @@ type Student struct {
 	Number string `json:"number"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type Teacher struct {
+	ID   string  `json:"id"`
+	Name *string `json:"name"`
 }
 
 type User struct {
@@ -49,6 +62,61 @@ type User struct {
 }
 
 type GroupsFilter struct {
-	DepartmentID *string `json:"departmentID"`
-	Course       *int    `json:"course"`
+	IDIn         []string `json:"idIn"`
+	DepartmentID *string  `json:"departmentID"`
+	Course       *int     `json:"course"`
+}
+
+type ScheduleFilter struct {
+	GroupID   *string `json:"groupID"`
+	TeacherID *string `json:"teacherID"`
+}
+
+type TeachersFilter struct {
+	IDIn []string `json:"idIn"`
+}
+
+type LessonType string
+
+const (
+	LessonTypeDefault LessonType = "DEFAULT"
+	LessonTypeLab     LessonType = "LAB"
+	LessonTypeLec     LessonType = "LEC"
+	LessonTypeSem     LessonType = "SEM"
+)
+
+var AllLessonType = []LessonType{
+	LessonTypeDefault,
+	LessonTypeLab,
+	LessonTypeLec,
+	LessonTypeSem,
+}
+
+func (e LessonType) IsValid() bool {
+	switch e {
+	case LessonTypeDefault, LessonTypeLab, LessonTypeLec, LessonTypeSem:
+		return true
+	}
+	return false
+}
+
+func (e LessonType) String() string {
+	return string(e)
+}
+
+func (e *LessonType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = LessonType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid LessonType", str)
+	}
+	return nil
+}
+
+func (e LessonType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

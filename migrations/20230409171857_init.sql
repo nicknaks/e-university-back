@@ -11,32 +11,33 @@ CREATE TABLE faculties
 
 CREATE TABLE departments
 (
-    id         uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    number     text NOT NULL,
-    name       text NOT NULL,
-    faculty_id uuid REFERENCES faculties (id)
+    id        uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    number    text NOT NULL,
+    name      text NOT NULL,
+    facultyId uuid REFERENCES faculties (id)
 );
 
 CREATE TABLE groups
 (
-    id            uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    number        text NOT NULL,
-    course        int  NOT NULL,
-    is_magistracy bool                      DEFAULT FALSE,
-    department_id uuid REFERENCES departments (id)
+    id           uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    number       text NOT NULL,
+    course       int  NOT NULL,
+    isMagistracy bool                      DEFAULT FALSE,
+    departmentId uuid REFERENCES departments (id)
 );
 
 CREATE TABLE students
 (
-    id       uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    group_id uuid NOT NULL REFERENCES groups (id),
-    number   text NOT NULL
+    id      uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    groupId uuid NOT NULL REFERENCES groups (id),
+    number  text NOT NULL
 );
 
 CREATE TABLE teachers
 (
     id         uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    speciality text NOT NULL
+    speciality text,
+    name       text NOT NULL
 );
 
 
@@ -47,31 +48,41 @@ CREATE TABLE users
     name     text    NOT NULL,
     login    text    NOT NULL,
     password text    NOT NULL,
-    owner_id uuid    NOT NULL
+    ownerId  uuid    NOT NULL,
+    token    text    NOT NULL
 );
 
 CREATE TABLE subjects
 (
-    id         uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    teacher_id uuid NOT NULL REFERENCES teachers (id),
-    group_id   uuid NOT NULL REFERENCES groups (id)
+    id        uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    teacherId uuid NOT NULL REFERENCES teachers (id),
+    groupId   uuid NOT NULL REFERENCES groups (id),
+    name      text
 );
+
+CREATE UNIQUE INDEX ON subjects (groupId, name);
 
 CREATE TABLE lesson
 (
-    id         uuid    NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    type       integer NOT NULL,
-    subject_id uuid    NOT NULL REFERENCES subjects (id),
-    module     int,
-    name       text
+    id            uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    type          integer,
+    subjectId     uuid NOT NULL REFERENCES subjects (id),
+    name          text,
+    couple        int  NOT NULL,
+    day           int  NOT NULL,
+    groupId       uuid NOT NULL REFERENCES groups (id),
+    teacherId     uuid REFERENCES teachers (id),
+    cabinet       text,
+    isDenominator bool                      DEFAULT FALSE,
+    isNumerator   bool                      DEFAULT FALSE
 );
 
 CREATE TABLE lessons_progress
 (
-    id         uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    lesson_id  uuid NOT NULL REFERENCES lesson (id),
-    student_id uuid NOT NULL REFERENCES students (id),
-    points     integer
+    id        uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    lessonId  uuid NOT NULL REFERENCES lesson (id),
+    studentId uuid NOT NULL REFERENCES students (id),
+    points    integer
 );
 
 -- +goose StatementEnd
