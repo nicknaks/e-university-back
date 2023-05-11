@@ -13,4 +13,10 @@ run::
 db:
 	psql -c "drop database if exists e_university;"
 	createdb e_university
-	goose -allow-missing -dir migrations postgres "dbname=e_university sslmode=disable" up
+	goose  -dir migrations postgres "user=postgres dbname=e_university sslmode=disable" up
+
+.PHONY: db2
+db2:
+	psql -c "drop database if exists e_university;"
+	createdb e_university
+	GOOSE_DRIVER=postgres GOOSE_DBSTRING="user=postgres password=newPassword dbname=e_university sslmode=disable" goose -dir migrations up
