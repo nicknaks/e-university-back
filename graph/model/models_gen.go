@@ -53,14 +53,24 @@ type Student struct {
 	Number string `json:"number"`
 }
 
+type Subject struct {
+	ID        string   `json:"id"`
+	TeacherID *string  `json:"teacherID"`
+	GroupID   string   `json:"groupID"`
+	Name      *string  `json:"name"`
+	Group     *Group   `json:"group"`
+	Teacher   *Teacher `json:"teacher"`
+}
+
 type Teacher struct {
 	ID   string  `json:"id"`
 	Name *string `json:"name"`
 }
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID      string   `json:"id"`
+	OwnerID *string  `json:"owner_id"`
+	Type    UserType `json:"type"`
 }
 
 type GroupsFilter struct {
@@ -70,6 +80,11 @@ type GroupsFilter struct {
 }
 
 type ScheduleFilter struct {
+	GroupID   *string `json:"groupID"`
+	TeacherID *string `json:"teacherID"`
+}
+
+type SubjectsFilter struct {
 	GroupID   *string `json:"groupID"`
 	TeacherID *string `json:"teacherID"`
 }
@@ -120,5 +135,48 @@ func (e *LessonType) UnmarshalGQL(v interface{}) error {
 }
 
 func (e LessonType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type UserType string
+
+const (
+	UserTypeUnknown UserType = "UNKNOWN"
+	UserTypeTeacher UserType = "TEACHER"
+	UserTypeStudent UserType = "STUDENT"
+)
+
+var AllUserType = []UserType{
+	UserTypeUnknown,
+	UserTypeTeacher,
+	UserTypeStudent,
+}
+
+func (e UserType) IsValid() bool {
+	switch e {
+	case UserTypeUnknown, UserTypeTeacher, UserTypeStudent:
+		return true
+	}
+	return false
+}
+
+func (e UserType) String() string {
+	return string(e)
+}
+
+func (e *UserType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserType", str)
+	}
+	return nil
+}
+
+func (e UserType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

@@ -138,6 +138,58 @@ func (r *queryResolver) MySchedule(ctx context.Context) ([]*model.Lesson, error)
 	return models.ToLessons(lessons), nil
 }
 
+func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
+	user := auth_service.GetUserFromContext(ctx)
+
+	var userType model.UserType
+
+	switch user.UserType {
+	case 1:
+		userType = model.UserTypeTeacher
+	default:
+		userType = model.UserTypeUnknown
+	}
+
+	return &model.User{
+		ID:      user.ID,
+		OwnerID: lo.ToPtr(user.OwnerID),
+		Type:    userType,
+	}, nil
+}
+
+func (r *queryResolver) Subjects(ctx context.Context, filter *model.SubjectsFilter) ([]*model.Subject, error) {
+	subjects, err := r.Storage.ListSubjects(ctx, filter)
+	if err != nil {
+		fmt.Println("Storage.ListSubjects err %w", err)
+	}
+
+	return models.ToSubjects(subjects), nil
+}
+
+func (r *subjectResolver) Group(ctx context.Context, obj *model.Subject) (*model.Group, error) {
+	teachers, err := r.Storage.ListGroups(ctx, &model.GroupsFilter{IDIn: []string{obj.GroupID}})
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Group{
+		ID:     teachers[0].ID,
+		Number: teachers[0].Number,
+		Course: teachers[0].Course,
+	}, nil
+}
+
+func (r *subjectResolver) Teacher(ctx context.Context, obj *model.Subject) (*model.Teacher, error) {
+	if obj.TeacherID == nil {
+		return nil, nil
+	}
+	teachers, err := r.Storage.ListTeachers(ctx, &model.TeachersFilter{IDIn: []string{*obj.TeacherID}})
+	if err != nil {
+		return nil, err
+	}
+	return models.ToTeacher(teachers[0]), nil
+}
+
 // Lesson returns generated.LessonResolver implementation.
 func (r *Resolver) Lesson() generated.LessonResolver { return &lessonResolver{r} }
 
@@ -147,6 +199,10 @@ func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResol
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// Subject returns generated.SubjectResolver implementation.
+func (r *Resolver) Subject() generated.SubjectResolver { return &subjectResolver{r} }
+
 type lessonResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type subjectResolver struct{ *Resolver }

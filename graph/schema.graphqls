@@ -11,6 +11,8 @@ type Query {
     schedule(filter: scheduleFilter!): [Lesson!]
     teachers(filter: teachersFilter): [Teacher!]
     mySchedule: [Lesson!] @isAuthenticated
+    me: User @isAuthenticated
+    subjects(filter: subjectsFilter): [Subject!]
 }
 
 type Mutation {
@@ -19,6 +21,12 @@ type Mutation {
 }
 
 # енамы
+enum UserType {
+    UNKNOWN
+    TEACHER
+    STUDENT
+}
+
 enum LessonType {
     DEFAULT
     LAB
@@ -28,6 +36,11 @@ enum LessonType {
 
 
 # фильтры
+input subjectsFilter {
+    groupID: String
+    teacherID: String
+}
+
 input teachersFilter {
     idIn: [String!]
 }
@@ -47,6 +60,15 @@ input scheduleFilter {
 type Teacher {
     id: String!
     name: String
+}
+
+type Subject {
+    id: String!
+    teacherID: String
+    groupID: String!
+    name: String
+    group: Group @goField(forceResolver: true)
+    teacher: Teacher @goField(forceResolver: true)
 }
 
 type Lesson {
@@ -100,6 +122,7 @@ type Student {
 # Payloads
 type User {
     id: ID!
-    name: String!
+    owner_id: String
+    type: UserType!
 }
 

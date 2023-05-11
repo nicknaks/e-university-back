@@ -13,7 +13,6 @@ require (
 	github.com/lib/pq v1.2.0
 	github.com/rs/cors v1.8.3
 	github.com/samber/lo v1.38.1
-	github.com/sethvargo/go-password v0.2.0
 	github.com/vektah/gqlparser/v2 v2.4.0
 	gopkg.in/guregu/null.v4 v4.0.0
 )

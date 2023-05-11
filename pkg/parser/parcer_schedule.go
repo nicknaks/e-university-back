@@ -167,7 +167,7 @@ func ParseSchedule(ctx context.Context, data []Fac) ([]Lesson, error) {
 	for _, fac := range data {
 		for _, dep := range fac.Deps {
 			for _, group := range dep.Groups {
-				if group.Number == "БМТ1-21Б" {
+				if group.Number == "ИСОТ2-21А" {
 					return lessons, nil
 				}
 

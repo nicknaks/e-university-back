@@ -60,6 +60,27 @@ func (s *Storage) ListDepartments(ctx context.Context, facultiesID []string) ([]
 	return res, nil
 }
 
+func (s *Storage) ListSubjects(ctx context.Context, filter *model.SubjectsFilter) ([]*models.Subject, error) {
+	query := s.Builder().Select("*").From("subjects")
+
+	if filter != nil {
+		if filter.GroupID != nil {
+			query = query.Where(sq.Eq{"groupid": *filter.GroupID})
+		}
+		if filter.TeacherID != nil {
+			query = query.Where(sq.Eq{"teacherid": *filter.TeacherID})
+		}
+	}
+
+	var res []*models.Subject
+
+	err := s.Selectx(ctx, &res, query)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (s *Storage) ListGroups(ctx context.Context, filter *model.GroupsFilter) ([]*model.Group, error) {
 	query := s.Builder().Select("id, number, course").From("groups")
 
