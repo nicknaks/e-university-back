@@ -4,8 +4,6 @@ import (
 	"back/graph"
 	"back/graph/generated"
 	"back/internal/auth_service"
-	"back/pkg/parser"
-	"context"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -59,32 +57,32 @@ func main() {
 	router.Handle("/", playground.Handler("Starwars", "/query"))
 	router.Handle("/query", srv)
 
-	data, err := parser.ParseFaculties(nil)
-	if err != nil {
-		panic(err)
-	}
+	//data, err := parser.ParseFaculties(nil)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//data, err = parser.InitData(context.Background(), resolver.Storage, data)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//lessons, err := parser.ParseSchedule(nil, data)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//err = parser.ExtractTeachers(context.Background(), resolver.Storage, lessons)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//err = parser.InitUsers(context.Background(), resolver.Storage)
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	data, err = parser.InitData(context.Background(), resolver.Storage, data)
-	if err != nil {
-		panic(err)
-	}
-
-	lessons, err := parser.ParseSchedule(nil, data)
-	if err != nil {
-		panic(err)
-	}
-
-	err = parser.ExtractTeachers(context.Background(), resolver.Storage, lessons)
-	if err != nil {
-		panic(err)
-	}
-
-	err = parser.InitUsers(context.Background(), resolver.Storage)
-	if err != nil {
-		panic(err)
-	}
-
-	err = http.ListenAndServe(":8090", router)
+	err := http.ListenAndServe(":8090", router)
 	if err != nil {
 		panic(err)
 	}

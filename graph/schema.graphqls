@@ -49,6 +49,7 @@ input groupsFilter {
     idIn: [String!]
     departmentID: String
     course: Int
+    isMagistracy: Boolean
 }
 
 input scheduleFilter {

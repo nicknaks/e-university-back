@@ -142,6 +142,6 @@ func parseType(typeLesson string) int {
 	case "(сем)":
 		return 3
 	default:
-		panic(typeLesson)
+		return 0
 	}
 }

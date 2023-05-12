@@ -655,6 +655,7 @@ input groupsFilter {
     idIn: [String!]
     departmentID: String
     course: Int
+    isMagistracy: Boolean
 }
 
 input scheduleFilter {
@@ -3932,6 +3933,14 @@ func (ec *executionContext) unmarshalInputgroupsFilter(ctx context.Context, obj 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("course"))
 			it.Course, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isMagistracy":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isMagistracy"))
+			it.IsMagistracy, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}

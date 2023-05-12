@@ -77,6 +77,7 @@ type GroupsFilter struct {
 	IDIn         []string `json:"idIn"`
 	DepartmentID *string  `json:"departmentID"`
 	Course       *int     `json:"course"`
+	IsMagistracy *bool    `json:"isMagistracy"`
 }
 
 type ScheduleFilter struct {

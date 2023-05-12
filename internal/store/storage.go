@@ -94,6 +94,9 @@ func (s *Storage) ListGroups(ctx context.Context, filter *model.GroupsFilter) ([
 		if filter.DepartmentID != nil {
 			query = query.Where(sq.Eq{"departmentId": *filter.DepartmentID})
 		}
+		if filter.IsMagistracy != nil {
+			query = query.Where(sq.Eq{"ismagistracy": *filter.IsMagistracy})
+		}
 	}
 
 	var res []*model.Group
