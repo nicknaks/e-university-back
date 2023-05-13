@@ -17,7 +17,10 @@ type Query {
 
 type Mutation {
     login(login: String!,password: String!): Boolean!
-    logout: Boolean!
+    logout: Boolean! @isAuthenticated
+    subjectCreate(input: subjectCreateInput!): Subject! @isAuthenticated
+    subjectTypeChange(input: subjectTypeChangeInput!): Subject! @isAuthenticated
+    lessonCreate(input: lessonCreateInput!): Lesson @isAuthenticated
 }
 
 # енамы
@@ -25,6 +28,15 @@ enum UserType {
     UNKNOWN
     TEACHER
     STUDENT
+    ADMIN
+}
+
+enum SubjectType {
+    UNKNOWN
+    CREDIT
+    EXAM
+    COURSE_WORK
+    PRACTICAL
 }
 
 enum LessonType {
@@ -35,8 +47,31 @@ enum LessonType {
 }
 
 
-# фильтры
+# input
+input subjectCreateInput {
+    name: String!
+    type: SubjectType!
+    teacherID: String!
+    groupID: String!
+}
+
+input lessonCreateInput {
+    subjectID: String!
+    type: LessonType!
+    couple: Int!
+    day: Int!
+    cabinet: String
+    isDenominator: Boolean!
+    isNumerator: Boolean!
+}
+
+input subjectTypeChangeInput {
+    id: String!
+    type: SubjectType!
+}
+
 input subjectsFilter {
+    ID: [String!]
     groupID: String
     teacherID: String
 }
@@ -70,6 +105,7 @@ type Subject {
     name: String
     group: Group @goField(forceResolver: true)
     teacher: Teacher @goField(forceResolver: true)
+    type: SubjectType!
 }
 
 type Lesson {

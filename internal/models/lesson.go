@@ -16,6 +16,19 @@ type Lesson struct {
 	IsNumerator   bool    `json:"isNumerator"`
 }
 
+func ParseApiLessonType(lessonType model.LessonType) int {
+	switch lessonType {
+	case model.LessonTypeLab:
+		return 1
+	case model.LessonTypeLec:
+		return 2
+	case model.LessonTypeSem:
+		return 3
+	default:
+		return 0
+	}
+}
+
 func parseLessonType(lessonType int) model.LessonType {
 	switch lessonType {
 	case 0:

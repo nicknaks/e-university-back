@@ -86,8 +86,11 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		Login  func(childComplexity int, login string, password string) int
-		Logout func(childComplexity int) int
+		LessonCreate      func(childComplexity int, input model.LessonCreateInput) int
+		Login             func(childComplexity int, login string, password string) int
+		Logout            func(childComplexity int) int
+		SubjectCreate     func(childComplexity int, input model.SubjectCreateInput) int
+		SubjectTypeChange func(childComplexity int, input model.SubjectTypeChangeInput) int
 	}
 
 	Query struct {
@@ -114,6 +117,7 @@ type ComplexityRoot struct {
 		Name      func(childComplexity int) int
 		Teacher   func(childComplexity int) int
 		TeacherID func(childComplexity int) int
+		Type      func(childComplexity int) int
 	}
 
 	Teacher struct {
@@ -135,6 +139,9 @@ type LessonResolver interface {
 type MutationResolver interface {
 	Login(ctx context.Context, login string, password string) (bool, error)
 	Logout(ctx context.Context) (bool, error)
+	SubjectCreate(ctx context.Context, input model.SubjectCreateInput) (*model.Subject, error)
+	SubjectTypeChange(ctx context.Context, input model.SubjectTypeChangeInput) (*model.Subject, error)
+	LessonCreate(ctx context.Context, input model.LessonCreateInput) (*model.Lesson, error)
 }
 type QueryResolver interface {
 	Faculties(ctx context.Context) ([]*model.Faculty, error)
@@ -347,6 +354,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Lesson.Type(childComplexity), true
 
+	case "Mutation.lessonCreate":
+		if e.complexity.Mutation.LessonCreate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_lessonCreate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.LessonCreate(childComplexity, args["input"].(model.LessonCreateInput)), true
+
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
 			break
@@ -365,6 +384,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Logout(childComplexity), true
+
+	case "Mutation.subjectCreate":
+		if e.complexity.Mutation.SubjectCreate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_subjectCreate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SubjectCreate(childComplexity, args["input"].(model.SubjectCreateInput)), true
+
+	case "Mutation.subjectTypeChange":
+		if e.complexity.Mutation.SubjectTypeChange == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_subjectTypeChange_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SubjectTypeChange(childComplexity, args["input"].(model.SubjectTypeChangeInput)), true
 
 	case "Query.faculties":
 		if e.complexity.Query.Faculties == nil {
@@ -505,6 +548,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Subject.TeacherID(childComplexity), true
 
+	case "Subject.type":
+		if e.complexity.Subject.Type == nil {
+			break
+		}
+
+		return e.complexity.Subject.Type(childComplexity), true
+
 	case "Teacher.id":
 		if e.complexity.Teacher.ID == nil {
 			break
@@ -623,7 +673,10 @@ type Query {
 
 type Mutation {
     login(login: String!,password: String!): Boolean!
-    logout: Boolean!
+    logout: Boolean! @isAuthenticated
+    subjectCreate(input: subjectCreateInput!): Subject! @isAuthenticated
+    subjectTypeChange(input: subjectTypeChangeInput!): Subject! @isAuthenticated
+    lessonCreate(input: lessonCreateInput!): Lesson @isAuthenticated
 }
 
 # енамы
@@ -631,6 +684,15 @@ enum UserType {
     UNKNOWN
     TEACHER
     STUDENT
+    ADMIN
+}
+
+enum SubjectType {
+    UNKNOWN
+    CREDIT
+    EXAM
+    COURSE_WORK
+    PRACTICAL
 }
 
 enum LessonType {
@@ -641,8 +703,31 @@ enum LessonType {
 }
 
 
-# фильтры
+# input
+input subjectCreateInput {
+    name: String!
+    type: SubjectType!
+    teacherID: String!
+    groupID: String!
+}
+
+input lessonCreateInput {
+    subjectID: String!
+    type: LessonType!
+    couple: Int!
+    day: Int!
+    cabinet: String
+    isDenominator: Boolean!
+    isNumerator: Boolean!
+}
+
+input subjectTypeChangeInput {
+    id: String!
+    type: SubjectType!
+}
+
 input subjectsFilter {
+    ID: [String!]
     groupID: String
     teacherID: String
 }
@@ -676,6 +761,7 @@ type Subject {
     name: String
     group: Group @goField(forceResolver: true)
     teacher: Teacher @goField(forceResolver: true)
+    type: SubjectType!
 }
 
 type Lesson {
@@ -741,6 +827,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_lessonCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.LessonCreateInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNlessonCreateInput2backᚋgraphᚋmodelᚐLessonCreateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -762,6 +863,36 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 		}
 	}
 	args["password"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_subjectCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.SubjectCreateInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNsubjectCreateInput2backᚋgraphᚋmodelᚐSubjectCreateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_subjectTypeChange_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.SubjectTypeChangeInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNsubjectTypeChangeInput2backᚋgraphᚋmodelᚐSubjectTypeChangeInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1826,8 +1957,28 @@ func (ec *executionContext) _Mutation_logout(ctx context.Context, field graphql.
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Logout(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().Logout(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1842,6 +1993,189 @@ func (ec *executionContext) _Mutation_logout(ctx context.Context, field graphql.
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_subjectCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_subjectCreate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SubjectCreate(rctx, args["input"].(model.SubjectCreateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.Subject); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *back/graph/model.Subject`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Subject)
+	fc.Result = res
+	return ec.marshalNSubject2ᚖbackᚋgraphᚋmodelᚐSubject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_subjectTypeChange(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_subjectTypeChange_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SubjectTypeChange(rctx, args["input"].(model.SubjectTypeChangeInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.Subject); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *back/graph/model.Subject`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Subject)
+	fc.Result = res
+	return ec.marshalNSubject2ᚖbackᚋgraphᚋmodelᚐSubject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_lessonCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_lessonCreate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().LessonCreate(rctx, args["input"].(model.LessonCreateInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.Lesson); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *back/graph/model.Lesson`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Lesson)
+	fc.Result = res
+	return ec.marshalOLesson2ᚖbackᚋgraphᚋmodelᚐLesson(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_faculties(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2546,6 +2880,41 @@ func (ec *executionContext) _Subject_teacher(ctx context.Context, field graphql.
 	res := resTmp.(*model.Teacher)
 	fc.Result = res
 	return ec.marshalOTeacher2ᚖbackᚋgraphᚋmodelᚐTeacher(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Subject_type(ctx context.Context, field graphql.CollectedField, obj *model.Subject) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Subject",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.SubjectType)
+	fc.Result = res
+	return ec.marshalNSubjectType2backᚋgraphᚋmodelᚐSubjectType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Teacher_id(ctx context.Context, field graphql.CollectedField, obj *model.Teacher) (ret graphql.Marshaler) {
@@ -3950,6 +4319,77 @@ func (ec *executionContext) unmarshalInputgroupsFilter(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputlessonCreateInput(ctx context.Context, obj interface{}) (model.LessonCreateInput, error) {
+	var it model.LessonCreateInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "subjectID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subjectID"))
+			it.SubjectID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalNLessonType2backᚋgraphᚋmodelᚐLessonType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "couple":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("couple"))
+			it.Couple, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "day":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("day"))
+			it.Day, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "cabinet":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cabinet"))
+			it.Cabinet, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isDenominator":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isDenominator"))
+			it.IsDenominator, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isNumerator":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isNumerator"))
+			it.IsNumerator, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputscheduleFilter(ctx context.Context, obj interface{}) (model.ScheduleFilter, error) {
 	var it model.ScheduleFilter
 	asMap := map[string]interface{}{}
@@ -3981,6 +4421,84 @@ func (ec *executionContext) unmarshalInputscheduleFilter(ctx context.Context, ob
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputsubjectCreateInput(ctx context.Context, obj interface{}) (model.SubjectCreateInput, error) {
+	var it model.SubjectCreateInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalNSubjectType2backᚋgraphᚋmodelᚐSubjectType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "teacherID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("teacherID"))
+			it.TeacherID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "groupID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("groupID"))
+			it.GroupID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputsubjectTypeChangeInput(ctx context.Context, obj interface{}) (model.SubjectTypeChangeInput, error) {
+	var it model.SubjectTypeChangeInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalNSubjectType2backᚋgraphᚋmodelᚐSubjectType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputsubjectsFilter(ctx context.Context, obj interface{}) (model.SubjectsFilter, error) {
 	var it model.SubjectsFilter
 	asMap := map[string]interface{}{}
@@ -3990,6 +4508,14 @@ func (ec *executionContext) unmarshalInputsubjectsFilter(ctx context.Context, ob
 
 	for k, v := range asMap {
 		switch k {
+		case "ID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ID"))
+			it.ID, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "groupID":
 			var err error
 
@@ -4425,6 +4951,33 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "subjectCreate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_subjectCreate(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "subjectTypeChange":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_subjectTypeChange(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "lessonCreate":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_lessonCreate(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4762,6 +5315,16 @@ func (ec *executionContext) _Subject(ctx context.Context, sel ast.SelectionSet, 
 				return innerFunc(ctx)
 
 			})
+		case "type":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Subject_type(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5474,6 +6037,10 @@ func (ec *executionContext) marshalNStudent2ᚕᚖbackᚋgraphᚋmodelᚐStudent
 	return ret
 }
 
+func (ec *executionContext) marshalNSubject2backᚋgraphᚋmodelᚐSubject(ctx context.Context, sel ast.SelectionSet, v model.Subject) graphql.Marshaler {
+	return ec._Subject(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNSubject2ᚖbackᚋgraphᚋmodelᚐSubject(ctx context.Context, sel ast.SelectionSet, v *model.Subject) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -5482,6 +6049,16 @@ func (ec *executionContext) marshalNSubject2ᚖbackᚋgraphᚋmodelᚐSubject(ct
 		return graphql.Null
 	}
 	return ec._Subject(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSubjectType2backᚋgraphᚋmodelᚐSubjectType(ctx context.Context, v interface{}) (model.SubjectType, error) {
+	var res model.SubjectType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSubjectType2backᚋgraphᚋmodelᚐSubjectType(ctx context.Context, sel ast.SelectionSet, v model.SubjectType) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNTeacher2ᚖbackᚋgraphᚋmodelᚐTeacher(ctx context.Context, sel ast.SelectionSet, v *model.Teacher) graphql.Marshaler {
@@ -5757,8 +6334,23 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalNlessonCreateInput2backᚋgraphᚋmodelᚐLessonCreateInput(ctx context.Context, v interface{}) (model.LessonCreateInput, error) {
+	res, err := ec.unmarshalInputlessonCreateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNscheduleFilter2backᚋgraphᚋmodelᚐScheduleFilter(ctx context.Context, v interface{}) (model.ScheduleFilter, error) {
 	res, err := ec.unmarshalInputscheduleFilter(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNsubjectCreateInput2backᚋgraphᚋmodelᚐSubjectCreateInput(ctx context.Context, v interface{}) (model.SubjectCreateInput, error) {
+	res, err := ec.unmarshalInputsubjectCreateInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNsubjectTypeChangeInput2backᚋgraphᚋmodelᚐSubjectTypeChangeInput(ctx context.Context, v interface{}) (model.SubjectTypeChangeInput, error) {
+	res, err := ec.unmarshalInputsubjectTypeChangeInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -5950,6 +6542,13 @@ func (ec *executionContext) marshalOLesson2ᚕᚖbackᚋgraphᚋmodelᚐLesson�
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalOLesson2ᚖbackᚋgraphᚋmodelᚐLesson(ctx context.Context, sel ast.SelectionSet, v *model.Lesson) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Lesson(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

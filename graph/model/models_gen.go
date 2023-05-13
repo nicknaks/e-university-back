@@ -54,12 +54,13 @@ type Student struct {
 }
 
 type Subject struct {
-	ID        string   `json:"id"`
-	TeacherID *string  `json:"teacherID"`
-	GroupID   string   `json:"groupID"`
-	Name      *string  `json:"name"`
-	Group     *Group   `json:"group"`
-	Teacher   *Teacher `json:"teacher"`
+	ID        string      `json:"id"`
+	TeacherID *string     `json:"teacherID"`
+	GroupID   string      `json:"groupID"`
+	Name      *string     `json:"name"`
+	Group     *Group      `json:"group"`
+	Teacher   *Teacher    `json:"teacher"`
+	Type      SubjectType `json:"type"`
 }
 
 type Teacher struct {
@@ -80,14 +81,37 @@ type GroupsFilter struct {
 	IsMagistracy *bool    `json:"isMagistracy"`
 }
 
+type LessonCreateInput struct {
+	SubjectID     string     `json:"subjectID"`
+	Type          LessonType `json:"type"`
+	Couple        int        `json:"couple"`
+	Day           int        `json:"day"`
+	Cabinet       *string    `json:"cabinet"`
+	IsDenominator bool       `json:"isDenominator"`
+	IsNumerator   bool       `json:"isNumerator"`
+}
+
 type ScheduleFilter struct {
 	GroupID   *string `json:"groupID"`
 	TeacherID *string `json:"teacherID"`
 }
 
+type SubjectCreateInput struct {
+	Name      string      `json:"name"`
+	Type      SubjectType `json:"type"`
+	TeacherID string      `json:"teacherID"`
+	GroupID   string      `json:"groupID"`
+}
+
+type SubjectTypeChangeInput struct {
+	ID   string      `json:"id"`
+	Type SubjectType `json:"type"`
+}
+
 type SubjectsFilter struct {
-	GroupID   *string `json:"groupID"`
-	TeacherID *string `json:"teacherID"`
+	ID        []string `json:"ID"`
+	GroupID   *string  `json:"groupID"`
+	TeacherID *string  `json:"teacherID"`
 }
 
 type TeachersFilter struct {
@@ -139,23 +163,72 @@ func (e LessonType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type SubjectType string
+
+const (
+	SubjectTypeUnknown    SubjectType = "UNKNOWN"
+	SubjectTypeCredit     SubjectType = "CREDIT"
+	SubjectTypeExam       SubjectType = "EXAM"
+	SubjectTypeCourseWork SubjectType = "COURSE_WORK"
+	SubjectTypePractical  SubjectType = "PRACTICAL"
+)
+
+var AllSubjectType = []SubjectType{
+	SubjectTypeUnknown,
+	SubjectTypeCredit,
+	SubjectTypeExam,
+	SubjectTypeCourseWork,
+	SubjectTypePractical,
+}
+
+func (e SubjectType) IsValid() bool {
+	switch e {
+	case SubjectTypeUnknown, SubjectTypeCredit, SubjectTypeExam, SubjectTypeCourseWork, SubjectTypePractical:
+		return true
+	}
+	return false
+}
+
+func (e SubjectType) String() string {
+	return string(e)
+}
+
+func (e *SubjectType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = SubjectType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid SubjectType", str)
+	}
+	return nil
+}
+
+func (e SubjectType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type UserType string
 
 const (
 	UserTypeUnknown UserType = "UNKNOWN"
 	UserTypeTeacher UserType = "TEACHER"
 	UserTypeStudent UserType = "STUDENT"
+	UserTypeAdmin   UserType = "ADMIN"
 )
 
 var AllUserType = []UserType{
 	UserTypeUnknown,
 	UserTypeTeacher,
 	UserTypeStudent,
+	UserTypeAdmin,
 }
 
 func (e UserType) IsValid() bool {
 	switch e {
-	case UserTypeUnknown, UserTypeTeacher, UserTypeStudent:
+	case UserTypeUnknown, UserTypeTeacher, UserTypeStudent, UserTypeAdmin:
 		return true
 	}
 	return false

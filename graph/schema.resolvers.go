@@ -70,6 +70,38 @@ func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
+func (r *mutationResolver) SubjectCreate(ctx context.Context, input model.SubjectCreateInput) (*model.Subject, error) {
+	subject, err := r.Storage.CreateSubject(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToSubject(subject), nil
+}
+
+func (r *mutationResolver) SubjectTypeChange(ctx context.Context, input model.SubjectTypeChangeInput) (*model.Subject, error) {
+	m := map[string]interface{}{
+		"type": models.ParseApiSubjectType(input.Type),
+	}
+
+	subject, err := r.Storage.UpdateSubject(ctx, input.ID, m)
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToSubject(subject), nil
+}
+
+func (r *mutationResolver) LessonCreate(ctx context.Context, input model.LessonCreateInput) (*model.Lesson, error) {
+	subjects, err := r.Storage.ListSubjects(ctx, &model.SubjectsFilter{ID: []string{input.SubjectID}})
+	if err != nil {
+		return nil, err
+	}
+
+	lesson, err := r.Storage.LessonCreate(ctx, input, subjects[0])
+	return models.ToLesson(lesson), err
+}
+
 func (r *queryResolver) Faculties(ctx context.Context) ([]*model.Faculty, error) {
 	res, err := r.Storage.ListFaculties(ctx)
 	if err != nil {
@@ -146,6 +178,10 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	switch user.UserType {
 	case 1:
 		userType = model.UserTypeTeacher
+	case 2:
+		userType = model.UserTypeStudent
+	case 3:
+		userType = model.UserTypeAdmin
 	default:
 		userType = model.UserTypeUnknown
 	}

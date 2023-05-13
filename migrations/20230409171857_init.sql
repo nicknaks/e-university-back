@@ -57,7 +57,8 @@ CREATE TABLE subjects
     id        uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
     teacherId uuid NOT NULL REFERENCES teachers (id),
     groupId   uuid NOT NULL REFERENCES groups (id),
-    name      text
+    name      text,
+    type      int                       DEFAULT 1
 );
 
 CREATE UNIQUE INDEX ON subjects (groupId, name);
@@ -76,6 +77,11 @@ CREATE TABLE lesson
     isDenominator bool                      DEFAULT FALSE,
     isNumerator   bool                      DEFAULT FALSE
 );
+
+CREATE UNIQUE INDEX ON lesson (teacherId, couple, day, isNumerator, isDenominator);
+-- CREATE UNIQUE INDEX ON lesson (teacherId, couple, day, isDenominator);
+CREATE UNIQUE INDEX ON lesson (groupid, couple, day, isNumerator);
+CREATE UNIQUE INDEX ON lesson (groupid, couple, day, isDenominator);
 
 CREATE TABLE lessons_progress
 (

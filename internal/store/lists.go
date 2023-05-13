@@ -70,6 +70,9 @@ func (s *Storage) ListSubjects(ctx context.Context, filter *model.SubjectsFilter
 		if filter.TeacherID != nil {
 			query = query.Where(sq.Eq{"teacherid": *filter.TeacherID})
 		}
+		if len(filter.ID) > 0 {
+			query = query.Where(sq.Eq{"id": filter.ID})
+		}
 	}
 
 	var res []*models.Subject
