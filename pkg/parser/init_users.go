@@ -15,7 +15,6 @@ func InitUsers(ctx context.Context, db store.Storage) error {
 	for _, teacher := range teachers {
 		query := db.Builder().Insert("users").SetMap(map[string]interface{}{
 			"type":  1,
-			"name":  teacher.Name,
 			"login": uuid.UUIDv4(),
 			//"password": password.MustGenerate(20, 10, 10, false, false),
 			"password": "123",

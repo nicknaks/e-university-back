@@ -13,6 +13,9 @@ type Query {
     mySchedule: [Lesson!] @isAuthenticated
     me: User @isAuthenticated
     subjects(filter: subjectsFilter): [Subject!]
+    students(filter: studentsFilter): [Student!]
+    classes(filter: classesFilter): [Class!]
+    subjectResults(filter: subjectResultsFilter): [SubjectResult!]
 }
 
 type Mutation {
@@ -21,6 +24,9 @@ type Mutation {
     subjectCreate(input: subjectCreateInput!): Subject! @isAuthenticated
     subjectTypeChange(input: subjectTypeChangeInput!): Subject! @isAuthenticated
     lessonCreate(input: lessonCreateInput!): Lesson @isAuthenticated
+    studentCreate(input: studentCreateInput!): Student! @isAuthenticated
+    markCreate(input: markCreateInput!): ClassProgress! @isAuthenticated
+    absentSet(input: absentSetInput!): [ClassProgress!] @isAuthenticated
 }
 
 # енамы
@@ -46,8 +52,41 @@ enum LessonType {
     SEM
 }
 
+input subjectResultsFilter {
+    subjectID: String
+    studentID: String
+}
 
 # input
+input absentSetInput {
+    classProgressID: [String!]!
+}
+
+input markCreateInput {
+    classProgressID: String!
+    mark: Int!
+}
+
+input classesProgressFilter {
+    classID: String
+}
+
+input classesFilter {
+    ids: [String!]
+    subjectID: String
+    groupID: String
+}
+
+input studentsFilter {
+    groupID: String
+    subjectID: String
+}
+
+input studentCreateInput {
+    name: String!
+    groupID: String!
+}
+
 input subjectCreateInput {
     name: String!
     type: SubjectType!
@@ -93,6 +132,41 @@ input scheduleFilter {
 }
 
 # типы
+type SubjectResult {
+    id: String!
+    studentID: String!
+    subjectID: String!
+    subject: Subject!  @goField(forceResolver: true)
+    firstModuleMark: Int!
+    secondModuleMark: Int!
+    thirdModuleMark: Int!
+    mark: Int!
+    """ оценка за предмет """
+    total: Int!
+}
+
+type Class {
+    id: String!
+    day: String!
+    type: LessonType!
+    comment: String
+    name: String
+    module: Int!
+    subjectID: String!
+    lessonID: String!
+    groupID: String!
+    studentProgress: [ClassProgress!] @goField(forceResolver: true)
+}
+
+type ClassProgress {
+    id: String!
+    classID: String!
+    studentID: String!
+    isAbsent: Boolean!
+    teacherID: String
+    mark: Int!
+}
+
 type Teacher {
     id: String!
     name: String
@@ -149,8 +223,7 @@ type Group {
 type Student {
     id: String!
     name: String!
-    login: String!
-    number: String!
+    groupId: String!
 }
 
 # Инпуты

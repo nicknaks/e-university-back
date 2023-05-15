@@ -84,6 +84,84 @@ func (s *Storage) ListSubjects(ctx context.Context, filter *model.SubjectsFilter
 	return res, nil
 }
 
+func (s *Storage) ListClasses(ctx context.Context, filter *model.ClassesFilter) ([]*models.Class, error) {
+	query := s.Builder().Select("*").From("classes")
+
+	if filter != nil {
+		if filter.SubjectID != nil {
+			query = query.Where(sq.Eq{"subjectid": *filter.SubjectID})
+		}
+		if filter.GroupID != nil {
+			query = query.Where(sq.Eq{"groupid": *filter.GroupID})
+		}
+	}
+
+	var res []*models.Class
+
+	err := s.Selectx(ctx, &res, query)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *Storage) ListClassesProgresses(ctx context.Context, filter *model.ClassesProgressFilter) ([]*models.ClassProgress, error) {
+	query := s.Builder().Select("*").From("classes_progresses")
+
+	if filter != nil {
+		if filter.ClassID != nil {
+			query = query.Where(sq.Eq{"classid": *filter.ClassID})
+		}
+	}
+
+	var res []*models.ClassProgress
+
+	err := s.Selectx(ctx, &res, query)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *Storage) ListSubjectsResults(ctx context.Context, filter *model.SubjectResultsFilter) ([]*models.SubjectResult, error) {
+	query := s.Builder().Select("*").From("subjects_results")
+
+	if filter != nil {
+		if filter.SubjectID != nil {
+			query = query.Where(sq.Eq{"subjectid": *filter.SubjectID})
+		}
+		if filter.StudentID != nil {
+			query = query.Where(sq.Eq{"studentid": *filter.StudentID})
+		}
+	}
+
+	var res []*models.SubjectResult
+
+	err := s.Selectx(ctx, &res, query)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *Storage) ListStudents(ctx context.Context, filter *model.StudentsFilter) ([]*models.Student, error) {
+	query := s.Builder().Select("*").From("students")
+
+	if filter != nil {
+		if filter.GroupID != nil {
+			query = query.Where(sq.Eq{"groupid": *filter.GroupID})
+		}
+	}
+
+	var res []*models.Student
+
+	err := s.Selectx(ctx, &res, query)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (s *Storage) ListGroups(ctx context.Context, filter *model.GroupsFilter) ([]*model.Group, error) {
 	query := s.Builder().Select("id, number, course").From("groups")
 

@@ -16,6 +16,15 @@ import (
 	"github.com/samber/lo"
 )
 
+func (r *classResolver) StudentProgress(ctx context.Context, obj *model.Class) ([]*model.ClassProgress, error) {
+	res, err := r.Storage.ListClassesProgresses(ctx, &model.ClassesProgressFilter{ClassID: lo.ToPtr(obj.ID)})
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToClassProgresses(res), nil
+}
+
 func (r *lessonResolver) Teacher(ctx context.Context, obj *model.Lesson) (*model.Teacher, error) {
 	if obj.TeacherID == nil {
 		return nil, nil
@@ -100,6 +109,45 @@ func (r *mutationResolver) LessonCreate(ctx context.Context, input model.LessonC
 
 	lesson, err := r.Storage.LessonCreate(ctx, input, subjects[0])
 	return models.ToLesson(lesson), err
+}
+
+func (r *mutationResolver) StudentCreate(ctx context.Context, input model.StudentCreateInput) (*model.Student, error) {
+	student, err := r.Storage.CreateStudent(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("Storage.CreateStudent err %w", err)
+	}
+
+	_, err = r.Storage.CreateClassesProgressForStudent(ctx, student.ID, student.GroupID)
+	if err != nil {
+		return nil, fmt.Errorf("Storage.CreateClassesProgressForStudent err %w", err)
+	}
+
+	_, err = r.Storage.CreateSubjectsResultsForStudent(ctx, student.ID, student.GroupID)
+	if err != nil {
+		return nil, fmt.Errorf("Storage.CreateSubjectsResultsForStudent err %w", err)
+	}
+
+	return models.ToStudent(student), nil
+}
+
+func (r *mutationResolver) MarkCreate(ctx context.Context, input model.MarkCreateInput) (*model.ClassProgress, error) {
+	res, err := r.Storage.ClassProgressUpdate(ctx, input.ClassProgressID, map[string]interface{}{
+		"mark": input.Mark,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToClassProgress(res), nil
+}
+
+func (r *mutationResolver) AbsentSet(ctx context.Context, input model.AbsentSetInput) ([]*model.ClassProgress, error) {
+	res, err := r.Storage.SetAbsent(ctx, input.ClassProgressID)
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToClassProgresses(res), nil
 }
 
 func (r *queryResolver) Faculties(ctx context.Context) ([]*model.Faculty, error) {
@@ -202,6 +250,33 @@ func (r *queryResolver) Subjects(ctx context.Context, filter *model.SubjectsFilt
 	return models.ToSubjects(subjects), nil
 }
 
+func (r *queryResolver) Students(ctx context.Context, filter *model.StudentsFilter) ([]*model.Student, error) {
+	st, err := r.Storage.ListStudents(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToStudents(st), nil
+}
+
+func (r *queryResolver) Classes(ctx context.Context, filter *model.ClassesFilter) ([]*model.Class, error) {
+	cl, err := r.Storage.ListClasses(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToClasses(cl), nil
+}
+
+func (r *queryResolver) SubjectResults(ctx context.Context, filter *model.SubjectResultsFilter) ([]*model.SubjectResult, error) {
+	res, err := r.Storage.ListSubjectsResults(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToSubjectResults(res), nil
+}
+
 func (r *subjectResolver) Group(ctx context.Context, obj *model.Subject) (*model.Group, error) {
 	teachers, err := r.Storage.ListGroups(ctx, &model.GroupsFilter{IDIn: []string{obj.GroupID}})
 	if err != nil {
@@ -226,6 +301,18 @@ func (r *subjectResolver) Teacher(ctx context.Context, obj *model.Subject) (*mod
 	return models.ToTeacher(teachers[0]), nil
 }
 
+func (r *subjectResultResolver) Subject(ctx context.Context, obj *model.SubjectResult) (*model.Subject, error) {
+	subjects, err := r.Storage.ListSubjects(ctx, &model.SubjectsFilter{ID: []string{obj.SubjectID}})
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToSubject(subjects[0]), nil
+}
+
+// Class returns generated.ClassResolver implementation.
+func (r *Resolver) Class() generated.ClassResolver { return &classResolver{r} }
+
 // Lesson returns generated.LessonResolver implementation.
 func (r *Resolver) Lesson() generated.LessonResolver { return &lessonResolver{r} }
 
@@ -238,7 +325,12 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 // Subject returns generated.SubjectResolver implementation.
 func (r *Resolver) Subject() generated.SubjectResolver { return &subjectResolver{r} }
 
+// SubjectResult returns generated.SubjectResultResolver implementation.
+func (r *Resolver) SubjectResult() generated.SubjectResultResolver { return &subjectResultResolver{r} }
+
+type classResolver struct{ *Resolver }
 type lessonResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subjectResolver struct{ *Resolver }
+type subjectResultResolver struct{ *Resolver }

@@ -84,6 +84,11 @@ func main() {
 		panic(err)
 	}
 
+	err = parser.InitParser(context.Background(), resolver.Storage)
+	if err != nil {
+		panic(err)
+	}
+
 	err = http.ListenAndServe(":8090", router)
 	if err != nil {
 		panic(err)

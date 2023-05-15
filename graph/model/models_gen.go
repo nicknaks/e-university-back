@@ -8,6 +8,28 @@ import (
 	"strconv"
 )
 
+type Class struct {
+	ID              string           `json:"id"`
+	Day             string           `json:"day"`
+	Type            LessonType       `json:"type"`
+	Comment         *string          `json:"comment"`
+	Name            *string          `json:"name"`
+	Module          int              `json:"module"`
+	SubjectID       string           `json:"subjectID"`
+	LessonID        string           `json:"lessonID"`
+	GroupID         string           `json:"groupID"`
+	StudentProgress []*ClassProgress `json:"studentProgress"`
+}
+
+type ClassProgress struct {
+	ID        string  `json:"id"`
+	ClassID   string  `json:"classID"`
+	StudentID string  `json:"studentID"`
+	IsAbsent  bool    `json:"isAbsent"`
+	TeacherID *string `json:"teacherID"`
+	Mark      int     `json:"mark"`
+}
+
 type Department struct {
 	ID        string   `json:"id"`
 	Number    string   `json:"number"`
@@ -47,10 +69,9 @@ type Lesson struct {
 }
 
 type Student struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Login  string `json:"login"`
-	Number string `json:"number"`
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	GroupID string `json:"groupId"`
 }
 
 type Subject struct {
@@ -63,6 +84,19 @@ type Subject struct {
 	Type      SubjectType `json:"type"`
 }
 
+type SubjectResult struct {
+	ID               string   `json:"id"`
+	StudentID        string   `json:"studentID"`
+	SubjectID        string   `json:"subjectID"`
+	Subject          *Subject `json:"subject"`
+	FirstModuleMark  int      `json:"firstModuleMark"`
+	SecondModuleMark int      `json:"secondModuleMark"`
+	ThirdModuleMark  int      `json:"thirdModuleMark"`
+	Mark             int      `json:"mark"`
+	//  оценка за предмет
+	Total int `json:"total"`
+}
+
 type Teacher struct {
 	ID   string  `json:"id"`
 	Name *string `json:"name"`
@@ -72,6 +106,20 @@ type User struct {
 	ID      string   `json:"id"`
 	OwnerID *string  `json:"owner_id"`
 	Type    UserType `json:"type"`
+}
+
+type AbsentSetInput struct {
+	ClassProgressID []string `json:"classProgressID"`
+}
+
+type ClassesFilter struct {
+	Ids       []string `json:"ids"`
+	SubjectID *string  `json:"subjectID"`
+	GroupID   *string  `json:"groupID"`
+}
+
+type ClassesProgressFilter struct {
+	ClassID *string `json:"classID"`
 }
 
 type GroupsFilter struct {
@@ -91,9 +139,24 @@ type LessonCreateInput struct {
 	IsNumerator   bool       `json:"isNumerator"`
 }
 
+type MarkCreateInput struct {
+	ClassProgressID string `json:"classProgressID"`
+	Mark            int    `json:"mark"`
+}
+
 type ScheduleFilter struct {
 	GroupID   *string `json:"groupID"`
 	TeacherID *string `json:"teacherID"`
+}
+
+type StudentCreateInput struct {
+	Name    string `json:"name"`
+	GroupID string `json:"groupID"`
+}
+
+type StudentsFilter struct {
+	GroupID   *string `json:"groupID"`
+	SubjectID *string `json:"subjectID"`
 }
 
 type SubjectCreateInput struct {
@@ -101,6 +164,11 @@ type SubjectCreateInput struct {
 	Type      SubjectType `json:"type"`
 	TeacherID string      `json:"teacherID"`
 	GroupID   string      `json:"groupID"`
+}
+
+type SubjectResultsFilter struct {
+	SubjectID *string `json:"subjectID"`
+	StudentID *string `json:"studentID"`
 }
 
 type SubjectTypeChangeInput struct {
