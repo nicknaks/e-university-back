@@ -207,7 +207,7 @@ type SubjectResolver interface {
 	Teacher(ctx context.Context, obj *model.Subject) (*model.Teacher, error)
 }
 type SubjectResultResolver interface {
-	Subject(ctx context.Context, obj *model.SubjectResult) (*model.Subject, error)
+	Subject(ctx context.Context, obj *model.SubjectResult) ([]*model.Subject, error)
 }
 
 type executableSchema struct {
@@ -1085,7 +1085,7 @@ type SubjectResult {
     id: String!
     studentID: String!
     subjectID: String!
-    subject: Subject!  @goField(forceResolver: true)
+    subject: [Subject!]  @goField(forceResolver: true)
     firstModuleMark: Int!
     secondModuleMark: Int!
     thirdModuleMark: Int!
@@ -4316,14 +4316,11 @@ func (ec *executionContext) _SubjectResult_subject(ctx context.Context, field gr
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Subject)
+	res := resTmp.([]*model.Subject)
 	fc.Result = res
-	return ec.marshalNSubject2ᚖbackᚋgraphᚋmodelᚐSubject(ctx, field.Selections, res)
+	return ec.marshalOSubject2ᚕᚖbackᚋgraphᚋmodelᚐSubjectᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SubjectResult_firstModuleMark(ctx context.Context, field graphql.CollectedField, obj *model.SubjectResult) (ret graphql.Marshaler) {
@@ -7456,9 +7453,6 @@ func (ec *executionContext) _SubjectResult(ctx context.Context, sel ast.Selectio
 					}
 				}()
 				res = ec._SubjectResult_subject(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
 				return res
 			}
 

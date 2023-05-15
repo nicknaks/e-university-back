@@ -85,14 +85,14 @@ type Subject struct {
 }
 
 type SubjectResult struct {
-	ID               string   `json:"id"`
-	StudentID        string   `json:"studentID"`
-	SubjectID        string   `json:"subjectID"`
-	Subject          *Subject `json:"subject"`
-	FirstModuleMark  int      `json:"firstModuleMark"`
-	SecondModuleMark int      `json:"secondModuleMark"`
-	ThirdModuleMark  int      `json:"thirdModuleMark"`
-	Mark             int      `json:"mark"`
+	ID               string     `json:"id"`
+	StudentID        string     `json:"studentID"`
+	SubjectID        string     `json:"subjectID"`
+	Subject          []*Subject `json:"subject"`
+	FirstModuleMark  int        `json:"firstModuleMark"`
+	SecondModuleMark int        `json:"secondModuleMark"`
+	ThirdModuleMark  int        `json:"thirdModuleMark"`
+	Mark             int        `json:"mark"`
 	//  оценка за предмет
 	Total int `json:"total"`
 }

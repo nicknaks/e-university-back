@@ -136,7 +136,7 @@ type SubjectResult {
     id: String!
     studentID: String!
     subjectID: String!
-    subject: Subject!  @goField(forceResolver: true)
+    subject: [Subject!]  @goField(forceResolver: true)
     firstModuleMark: Int!
     secondModuleMark: Int!
     thirdModuleMark: Int!

@@ -301,13 +301,13 @@ func (r *subjectResolver) Teacher(ctx context.Context, obj *model.Subject) (*mod
 	return models.ToTeacher(teachers[0]), nil
 }
 
-func (r *subjectResultResolver) Subject(ctx context.Context, obj *model.SubjectResult) (*model.Subject, error) {
+func (r *subjectResultResolver) Subject(ctx context.Context, obj *model.SubjectResult) ([]*model.Subject, error) {
 	subjects, err := r.Storage.ListSubjects(ctx, &model.SubjectsFilter{ID: []string{obj.SubjectID}})
 	if err != nil {
 		return nil, err
 	}
 
-	return models.ToSubject(subjects[0]), nil
+	return models.ToSubjects(subjects), nil
 }
 
 // Class returns generated.ClassResolver implementation.
