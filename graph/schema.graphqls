@@ -80,6 +80,7 @@ input classesFilter {
 input studentsFilter {
     groupID: String
     subjectID: String
+    idIn: [String!]
 }
 
 input studentCreateInput {

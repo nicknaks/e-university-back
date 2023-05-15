@@ -155,8 +155,9 @@ type StudentCreateInput struct {
 }
 
 type StudentsFilter struct {
-	GroupID   *string `json:"groupID"`
-	SubjectID *string `json:"subjectID"`
+	GroupID   *string  `json:"groupID"`
+	SubjectID *string  `json:"subjectID"`
+	IDIn      []string `json:"idIn"`
 }
 
 type SubjectCreateInput struct {

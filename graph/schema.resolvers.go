@@ -206,6 +206,14 @@ func (r *queryResolver) MySchedule(ctx context.Context) ([]*model.Lesson, error)
 	switch user.UserType {
 	case 1:
 		filter.TeacherID = lo.ToPtr(user.OwnerID)
+	case 2:
+		students, err := r.Storage.ListStudents(ctx, &model.StudentsFilter{
+			IDIn: []string{user.OwnerID},
+		})
+		if err != nil {
+			return nil, err
+		}
+		filter.GroupID = lo.ToPtr(students[0].GroupID)
 	default:
 		panic(nil)
 	}

@@ -1029,6 +1029,7 @@ input classesFilter {
 input studentsFilter {
     groupID: String
     subjectID: String
+    idIn: [String!]
 }
 
 input studentCreateInput {
@@ -6171,6 +6172,14 @@ func (ec *executionContext) unmarshalInputstudentsFilter(ctx context.Context, ob
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subjectID"))
 			it.SubjectID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			it.IDIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
