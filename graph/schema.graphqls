@@ -64,14 +64,14 @@ input classNameSetInput {
 }
 
 input subjectResultSetInput {
-    subjectProgressID: String!
+    subjectResultID: String!
     firstModuleMark: Boolean
     secondModuleMark: Boolean
     thirdModuleMark: Boolean
 }
 
 input totalMarkSetInput {
-    subjectProgressID: String!
+    subjectResultID: String!
     totalMark: Int!
 }
 

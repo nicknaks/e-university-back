@@ -1091,14 +1091,14 @@ input classNameSetInput {
 }
 
 input subjectResultSetInput {
-    subjectProgressID: String!
+    subjectResultID: String!
     firstModuleMark: Boolean
     secondModuleMark: Boolean
     thirdModuleMark: Boolean
 }
 
 input totalMarkSetInput {
-    subjectProgressID: String!
+    subjectResultID: String!
     totalMark: Int!
 }
 
@@ -6818,11 +6818,11 @@ func (ec *executionContext) unmarshalInputsubjectResultSetInput(ctx context.Cont
 
 	for k, v := range asMap {
 		switch k {
-		case "subjectProgressID":
+		case "subjectResultID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subjectProgressID"))
-			it.SubjectProgressID, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subjectResultID"))
+			it.SubjectResultID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6989,11 +6989,11 @@ func (ec *executionContext) unmarshalInputtotalMarkSetInput(ctx context.Context,
 
 	for k, v := range asMap {
 		switch k {
-		case "subjectProgressID":
+		case "subjectResultID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subjectProgressID"))
-			it.SubjectProgressID, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subjectResultID"))
+			it.SubjectResultID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}

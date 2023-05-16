@@ -196,7 +196,7 @@ func (r *mutationResolver) SubjectResultSet(ctx context.Context, input model.Sub
 		m["thirdmodulemark"] = 1
 	}
 
-	sub, err := r.Storage.UpdateSubjectResultByID(ctx, input.SubjectProgressID, m)
+	sub, err := r.Storage.UpdateSubjectResultByID(ctx, input.SubjectResultID, m)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func (r *mutationResolver) SubjectResultSet(ctx context.Context, input model.Sub
 }
 
 func (r *mutationResolver) TotalMarkSet(ctx context.Context, input *model.TotalMarkSetInput) (*model.SubjectResult, error) {
-	sub, err := r.Storage.UpdateSubjectResultByID(ctx, input.SubjectProgressID, map[string]interface{}{
+	sub, err := r.Storage.UpdateSubjectResultByID(ctx, input.SubjectResultID, map[string]interface{}{
 		"mark": input.TotalMark,
 	})
 	if err != nil {

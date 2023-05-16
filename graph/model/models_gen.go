@@ -179,10 +179,10 @@ type SubjectCreateInput struct {
 }
 
 type SubjectResultSetInput struct {
-	SubjectProgressID string `json:"subjectProgressID"`
-	FirstModuleMark   *bool  `json:"firstModuleMark"`
-	SecondModuleMark  *bool  `json:"secondModuleMark"`
-	ThirdModuleMark   *bool  `json:"thirdModuleMark"`
+	SubjectResultID  string `json:"subjectResultID"`
+	FirstModuleMark  *bool  `json:"firstModuleMark"`
+	SecondModuleMark *bool  `json:"secondModuleMark"`
+	ThirdModuleMark  *bool  `json:"thirdModuleMark"`
 }
 
 type SubjectResultsFilter struct {
@@ -206,8 +206,8 @@ type TeachersFilter struct {
 }
 
 type TotalMarkSetInput struct {
-	SubjectProgressID string `json:"subjectProgressID"`
-	TotalMark         int    `json:"totalMark"`
+	SubjectResultID string `json:"subjectResultID"`
+	TotalMark       int    `json:"totalMark"`
 }
 
 type LessonType string
