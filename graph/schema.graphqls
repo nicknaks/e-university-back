@@ -27,6 +27,7 @@ type Mutation {
     studentCreate(input: studentCreateInput!): Student! @isAuthenticated
     markCreate(input: markCreateInput!): ClassProgress! @isAuthenticated
     absentSet(input: absentSetInput!): [ClassProgress!] @isAuthenticated
+    attendedSet(input: absentSetInput!): [ClassProgress!] @isAuthenticated
 }
 
 # енамы

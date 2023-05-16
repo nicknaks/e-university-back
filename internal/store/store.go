@@ -16,8 +16,8 @@ func NewStorage() Storage {
 }
 
 func getPostgres() *sql.DB {
-	connStr := "user=postgres password=newPassword dbname=e_university sslmode=disable"
-	//connStr := "dbname=e_university sslmode=disable"
+	//connStr := "user=postgres password=newPassword dbname=e_university sslmode=disable"
+	connStr := "dbname=e_university sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		panic("cant parse config" + err.Error())

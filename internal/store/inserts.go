@@ -186,6 +186,20 @@ func (s *Storage) SetAbsent(ctx context.Context, classProgressIDs []string) ([]*
 	return res, nil
 }
 
+func (s *Storage) SetAttended(ctx context.Context, classProgressIDs []string) ([]*models.ClassProgress, error) {
+	query := s.Builder().Update("classes_progresses").SetMap(map[string]interface{}{
+		"isabsent": false,
+	}).Where(sq.Eq{"id": classProgressIDs}).Suffix("RETURNING *")
+
+	var res []*models.ClassProgress
+
+	err := s.Selectx(ctx, &res, query)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (s *Storage) CreateStudent(ctx context.Context, input model.StudentCreateInput) (*models.Student, error) {
 	query := s.Builder().Insert("students").SetMap(map[string]interface{}{
 		"groupid": input.GroupID,

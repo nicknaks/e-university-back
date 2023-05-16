@@ -96,6 +96,8 @@ func (s *Storage) ListClasses(ctx context.Context, filter *model.ClassesFilter) 
 		}
 	}
 
+	query = query.OrderBy("day ASC")
+
 	var res []*models.Class
 
 	err := s.Selectx(ctx, &res, query)

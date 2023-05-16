@@ -111,6 +111,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AbsentSet         func(childComplexity int, input model.AbsentSetInput) int
+		AttendedSet       func(childComplexity int, input model.AbsentSetInput) int
 		LessonCreate      func(childComplexity int, input model.LessonCreateInput) int
 		Login             func(childComplexity int, login string, password string) int
 		Logout            func(childComplexity int) int
@@ -189,6 +190,7 @@ type MutationResolver interface {
 	StudentCreate(ctx context.Context, input model.StudentCreateInput) (*model.Student, error)
 	MarkCreate(ctx context.Context, input model.MarkCreateInput) (*model.ClassProgress, error)
 	AbsentSet(ctx context.Context, input model.AbsentSetInput) ([]*model.ClassProgress, error)
+	AttendedSet(ctx context.Context, input model.AbsentSetInput) ([]*model.ClassProgress, error)
 }
 type QueryResolver interface {
 	Faculties(ctx context.Context) ([]*model.Faculty, error)
@@ -530,6 +532,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.AbsentSet(childComplexity, args["input"].(model.AbsentSetInput)), true
+
+	case "Mutation.attendedSet":
+		if e.complexity.Mutation.AttendedSet == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_attendedSet_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AttendedSet(childComplexity, args["input"].(model.AbsentSetInput)), true
 
 	case "Mutation.lessonCreate":
 		if e.complexity.Mutation.LessonCreate == nil {
@@ -976,6 +990,7 @@ type Mutation {
     studentCreate(input: studentCreateInput!): Student! @isAuthenticated
     markCreate(input: markCreateInput!): ClassProgress! @isAuthenticated
     absentSet(input: absentSetInput!): [ClassProgress!] @isAuthenticated
+    attendedSet(input: absentSetInput!): [ClassProgress!] @isAuthenticated
 }
 
 # енамы
@@ -1195,6 +1210,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // region    ***************************** args.gotpl *****************************
 
 func (ec *executionContext) field_Mutation_absentSet_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.AbsentSetInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNabsentSetInput2backᚋgraphᚋmodelᚐAbsentSetInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_attendedSet_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 model.AbsentSetInput
@@ -3334,6 +3364,65 @@ func (ec *executionContext) _Mutation_absentSet(ctx context.Context, field graph
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
 			return ec.resolvers.Mutation().AbsentSet(rctx, args["input"].(model.AbsentSetInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*model.ClassProgress); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*back/graph/model.ClassProgress`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.ClassProgress)
+	fc.Result = res
+	return ec.marshalOClassProgress2ᚕᚖbackᚋgraphᚋmodelᚐClassProgressᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_attendedSet(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_attendedSet_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().AttendedSet(rctx, args["input"].(model.AbsentSetInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.IsAuthenticated == nil {
@@ -7000,6 +7089,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "absentSet":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_absentSet(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+		case "attendedSet":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_attendedSet(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)

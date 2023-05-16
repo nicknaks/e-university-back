@@ -150,6 +150,15 @@ func (r *mutationResolver) AbsentSet(ctx context.Context, input model.AbsentSetI
 	return models.ToClassProgresses(res), nil
 }
 
+func (r *mutationResolver) AttendedSet(ctx context.Context, input model.AbsentSetInput) ([]*model.ClassProgress, error) {
+	res, err := r.Storage.SetAttended(ctx, input.ClassProgressID)
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToClassProgresses(res), nil
+}
+
 func (r *queryResolver) Faculties(ctx context.Context) ([]*model.Faculty, error) {
 	res, err := r.Storage.ListFaculties(ctx)
 	if err != nil {
