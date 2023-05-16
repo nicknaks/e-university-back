@@ -112,7 +112,8 @@ CREATE TABLE subjects_results
     firstModuleMark  int  NOT NULL             DEFAULT 0,
     secondModuleMark int  NOT NULL             DEFAULT 0,
     thirdModuleMark  int  NOT NULL             DEFAULT 0,
-    mark             int  NOT NULL             DEFAULT 0
+    mark             int  NOT NULL             DEFAULT 0,
+    examResult       int  NOT NULL             DEFAULT 0
 );
 
 CREATE OR REPLACE FUNCTION update_results_proc()
@@ -141,7 +142,11 @@ END;
 $$
     LANGUAGE 'plpgsql';
 
-CREATE TRIGGER update_results BEFORE UPDATE ON classes_progresses FOR EACH ROW EXECUTE PROCEDURE update_results_proc();
+CREATE TRIGGER update_results
+    BEFORE UPDATE
+    ON classes_progresses
+    FOR EACH ROW
+EXECUTE PROCEDURE update_results_proc();
 
 -- +goose StatementEnd
 

@@ -28,6 +28,7 @@ type Mutation {
     markCreate(input: markCreateInput!): ClassProgress! @isAuthenticated
     absentSet(input: absentSetInput!): [ClassProgress!] @isAuthenticated
     attendedSet(input: absentSetInput!): [ClassProgress!] @isAuthenticated
+    examResultSet(input: examResultSetInput!): SubjectResult @isAuthenticated
 }
 
 # енамы
@@ -53,12 +54,17 @@ enum LessonType {
     SEM
 }
 
+# input
 input subjectResultsFilter {
     subjectID: String
     studentID: String
 }
 
-# input
+input examResultSetInput {
+    examResultID: String!
+    mark: Int!
+}
+
 input absentSetInput {
     classProgressID: [String!]!
 }
@@ -145,6 +151,7 @@ type SubjectResult {
     mark: Int!
     """ оценка за предмет """
     total: Int!
+    examResult: Int!
 }
 
 type Class {

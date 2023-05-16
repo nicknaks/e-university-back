@@ -112,6 +112,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AbsentSet         func(childComplexity int, input model.AbsentSetInput) int
 		AttendedSet       func(childComplexity int, input model.AbsentSetInput) int
+		ExamResultSet     func(childComplexity int, input model.ExamResultSetInput) int
 		LessonCreate      func(childComplexity int, input model.LessonCreateInput) int
 		Login             func(childComplexity int, login string, password string) int
 		Logout            func(childComplexity int) int
@@ -151,6 +152,7 @@ type ComplexityRoot struct {
 	}
 
 	SubjectResult struct {
+		ExamResult       func(childComplexity int) int
 		FirstModuleMark  func(childComplexity int) int
 		ID               func(childComplexity int) int
 		Mark             func(childComplexity int) int
@@ -191,6 +193,7 @@ type MutationResolver interface {
 	MarkCreate(ctx context.Context, input model.MarkCreateInput) (*model.ClassProgress, error)
 	AbsentSet(ctx context.Context, input model.AbsentSetInput) ([]*model.ClassProgress, error)
 	AttendedSet(ctx context.Context, input model.AbsentSetInput) ([]*model.ClassProgress, error)
+	ExamResultSet(ctx context.Context, input model.ExamResultSetInput) (*model.SubjectResult, error)
 }
 type QueryResolver interface {
 	Faculties(ctx context.Context) ([]*model.Faculty, error)
@@ -545,6 +548,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.AttendedSet(childComplexity, args["input"].(model.AbsentSetInput)), true
 
+	case "Mutation.examResultSet":
+		if e.complexity.Mutation.ExamResultSet == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_examResultSet_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ExamResultSet(childComplexity, args["input"].(model.ExamResultSetInput)), true
+
 	case "Mutation.lessonCreate":
 		if e.complexity.Mutation.LessonCreate == nil {
 			break
@@ -799,6 +814,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Subject.Type(childComplexity), true
 
+	case "SubjectResult.examResult":
+		if e.complexity.SubjectResult.ExamResult == nil {
+			break
+		}
+
+		return e.complexity.SubjectResult.ExamResult(childComplexity), true
+
 	case "SubjectResult.firstModuleMark":
 		if e.complexity.SubjectResult.FirstModuleMark == nil {
 			break
@@ -991,6 +1013,7 @@ type Mutation {
     markCreate(input: markCreateInput!): ClassProgress! @isAuthenticated
     absentSet(input: absentSetInput!): [ClassProgress!] @isAuthenticated
     attendedSet(input: absentSetInput!): [ClassProgress!] @isAuthenticated
+    examResultSet(input: examResultSetInput!): SubjectResult @isAuthenticated
 }
 
 # енамы
@@ -1016,12 +1039,17 @@ enum LessonType {
     SEM
 }
 
+# input
 input subjectResultsFilter {
     subjectID: String
     studentID: String
 }
 
-# input
+input examResultSetInput {
+    examResultID: String!
+    mark: Int!
+}
+
 input absentSetInput {
     classProgressID: [String!]!
 }
@@ -1108,6 +1136,7 @@ type SubjectResult {
     mark: Int!
     """ оценка за предмет """
     total: Int!
+    examResult: Int!
 }
 
 type Class {
@@ -1231,6 +1260,21 @@ func (ec *executionContext) field_Mutation_attendedSet_args(ctx context.Context,
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNabsentSetInput2backᚋgraphᚋmodelᚐAbsentSetInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_examResultSet_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ExamResultSetInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNexamResultSetInput2backᚋgraphᚋmodelᚐExamResultSetInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3455,6 +3499,65 @@ func (ec *executionContext) _Mutation_attendedSet(ctx context.Context, field gra
 	return ec.marshalOClassProgress2ᚕᚖbackᚋgraphᚋmodelᚐClassProgressᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_examResultSet(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_examResultSet_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ExamResultSet(rctx, args["input"].(model.ExamResultSetInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.SubjectResult); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *back/graph/model.SubjectResult`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.SubjectResult)
+	fc.Result = res
+	return ec.marshalOSubjectResult2ᚖbackᚋgraphᚋmodelᚐSubjectResult(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_faculties(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4572,6 +4675,41 @@ func (ec *executionContext) _SubjectResult_total(ctx context.Context, field grap
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SubjectResult_examResult(ctx context.Context, field graphql.CollectedField, obj *model.SubjectResult) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SubjectResult",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ExamResult, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6028,6 +6166,37 @@ func (ec *executionContext) unmarshalInputclassesProgressFilter(ctx context.Cont
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputexamResultSetInput(ctx context.Context, obj interface{}) (model.ExamResultSetInput, error) {
+	var it model.ExamResultSetInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "examResultID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("examResultID"))
+			it.ExamResultID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "mark":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mark"))
+			it.Mark, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputgroupsFilter(ctx context.Context, obj interface{}) (model.GroupsFilter, error) {
 	var it model.GroupsFilter
 	asMap := map[string]interface{}{}
@@ -7100,6 +7269,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
 
+		case "examResultSet":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_examResultSet(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7608,6 +7784,16 @@ func (ec *executionContext) _SubjectResult(ctx context.Context, sel ast.Selectio
 		case "total":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._SubjectResult_total(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "examResult":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._SubjectResult_examResult(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -8709,6 +8895,11 @@ func (ec *executionContext) unmarshalNabsentSetInput2backᚋgraphᚋmodelᚐAbse
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNexamResultSetInput2backᚋgraphᚋmodelᚐExamResultSetInput(ctx context.Context, v interface{}) (model.ExamResultSetInput, error) {
+	res, err := ec.unmarshalInputexamResultSetInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNlessonCreateInput2backᚋgraphᚋmodelᚐLessonCreateInput(ctx context.Context, v interface{}) (model.LessonCreateInput, error) {
 	res, err := ec.unmarshalInputlessonCreateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -9230,6 +9421,13 @@ func (ec *executionContext) marshalOSubjectResult2ᚕᚖbackᚋgraphᚋmodelᚐS
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalOSubjectResult2ᚖbackᚋgraphᚋmodelᚐSubjectResult(ctx context.Context, sel ast.SelectionSet, v *model.SubjectResult) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SubjectResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOTeacher2ᚕᚖbackᚋgraphᚋmodelᚐTeacherᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Teacher) graphql.Marshaler {

@@ -94,7 +94,8 @@ type SubjectResult struct {
 	ThirdModuleMark  int        `json:"thirdModuleMark"`
 	Mark             int        `json:"mark"`
 	//  оценка за предмет
-	Total int `json:"total"`
+	Total      int `json:"total"`
+	ExamResult int `json:"examResult"`
 }
 
 type Teacher struct {
@@ -120,6 +121,11 @@ type ClassesFilter struct {
 
 type ClassesProgressFilter struct {
 	ClassID *string `json:"classID"`
+}
+
+type ExamResultSetInput struct {
+	ExamResultID string `json:"examResultID"`
+	Mark         int    `json:"mark"`
 }
 
 type GroupsFilter struct {

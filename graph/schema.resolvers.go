@@ -159,6 +159,17 @@ func (r *mutationResolver) AttendedSet(ctx context.Context, input model.AbsentSe
 	return models.ToClassProgresses(res), nil
 }
 
+func (r *mutationResolver) ExamResultSet(ctx context.Context, input model.ExamResultSetInput) (*model.SubjectResult, error) {
+	res, err := r.Storage.UpdateSubjectResultByID(ctx, input.ExamResultID, map[string]interface{}{
+		"examresult": input.Mark,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToSubjectResult(res), nil
+}
+
 func (r *queryResolver) Faculties(ctx context.Context) ([]*model.Faculty, error) {
 	res, err := r.Storage.ListFaculties(ctx)
 	if err != nil {

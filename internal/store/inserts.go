@@ -39,6 +39,20 @@ func (s *Storage) UpdateSubject(ctx context.Context, subjectID string, m map[str
 	return &sub, nil
 }
 
+func (s *Storage) UpdateSubjectResultByID(ctx context.Context, id string, m map[string]interface{}) (*models.SubjectResult, error) {
+	query := s.Builder().Update("subjects_results").SetMap(m).
+		Where(sq.Eq{"id": id}).
+		Suffix("RETURNING *")
+
+	sub := models.SubjectResult{}
+
+	err := s.Getx(ctx, &sub, query)
+	if err != nil {
+		return nil, err
+	}
+	return &sub, nil
+}
+
 func (s *Storage) UpdateSubjectResult(ctx context.Context, studentID string, subjectID string, m map[string]interface{}) (*models.SubjectResult, error) {
 	query := s.Builder().Update("subjects_results").SetMap(m).
 		Where(sq.And{sq.Eq{"studentid": studentID}, sq.Eq{"subjectid": subjectID}}).

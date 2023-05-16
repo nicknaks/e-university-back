@@ -12,6 +12,7 @@ type SubjectResult struct {
 	SecondModuleMark int
 	ThirdModuleMark  int
 	Mark             int
+	ExamResult       int
 }
 
 func ToSubjectResult(lesson *SubjectResult) *model.SubjectResult {
@@ -27,6 +28,7 @@ func ToSubjectResult(lesson *SubjectResult) *model.SubjectResult {
 		SecondModuleMark: lesson.SecondModuleMark,
 		ThirdModuleMark:  lesson.ThirdModuleMark,
 		Mark:             lesson.Mark,
+		ExamResult:       lesson.ExamResult,
 	}
 }
 func ToSubjectResults(lessons []*SubjectResult) []*model.SubjectResult {
