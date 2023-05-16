@@ -113,6 +113,11 @@ type AbsentSetInput struct {
 	ClassProgressID []string `json:"classProgressID"`
 }
 
+type ClassNameSetInput struct {
+	ClassID string `json:"classID"`
+	Name    string `json:"name"`
+}
+
 type ClassesFilter struct {
 	Ids       []string `json:"ids"`
 	SubjectID *string  `json:"subjectID"`
@@ -173,6 +178,13 @@ type SubjectCreateInput struct {
 	GroupID   string      `json:"groupID"`
 }
 
+type SubjectResultSetInput struct {
+	SubjectProgressID string `json:"subjectProgressID"`
+	FirstModuleMark   *bool  `json:"firstModuleMark"`
+	SecondModuleMark  *bool  `json:"secondModuleMark"`
+	ThirdModuleMark   *bool  `json:"thirdModuleMark"`
+}
+
 type SubjectResultsFilter struct {
 	SubjectID *string `json:"subjectID"`
 	StudentID *string `json:"studentID"`
@@ -191,6 +203,11 @@ type SubjectsFilter struct {
 
 type TeachersFilter struct {
 	IDIn []string `json:"idIn"`
+}
+
+type TotalMarkSetInput struct {
+	SubjectProgressID string `json:"subjectProgressID"`
+	TotalMark         int    `json:"totalMark"`
 }
 
 type LessonType string

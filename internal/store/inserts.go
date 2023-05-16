@@ -27,6 +27,18 @@ func (s *Storage) CreateSubject(ctx context.Context, input model.SubjectCreateIn
 	return &sub, nil
 }
 
+func (s *Storage) UpdateClass(ctx context.Context, classID string, m map[string]interface{}) (*models.Class, error) {
+	query := s.Builder().Update("classes").SetMap(m).Where(sq.Eq{"id": classID}).Suffix("RETURNING *")
+
+	sub := models.Class{}
+
+	err := s.Getx(ctx, &sub, query)
+	if err != nil {
+		return nil, err
+	}
+	return &sub, nil
+}
+
 func (s *Storage) UpdateSubject(ctx context.Context, subjectID string, m map[string]interface{}) (*models.Subject, error) {
 	query := s.Builder().Update("subjects").SetMap(m).Where(sq.Eq{"id": subjectID}).Suffix("RETURNING *")
 
@@ -126,6 +138,23 @@ func (s *Storage) CreateClassesProgressForStudent(ctx context.Context, studentID
 	}
 
 	return nil, nil
+}
+
+func (s *Storage) CreateSubjectsResultsForSubject(ctx context.Context, subjectID string, groupID string) error {
+	students, err := s.ListStudents(ctx, &model.StudentsFilter{
+		GroupID: lo.ToPtr(groupID),
+	})
+	if err != nil {
+		return err
+	}
+	for _, student := range students {
+		_, err = s.SubjectResultCreate(ctx, subjectID, student.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *Storage) CreateSubjectsResultsForStudent(ctx context.Context, studentID string, groupID string) ([]*models.SubjectResult, error) {

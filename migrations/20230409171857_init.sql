@@ -142,6 +142,30 @@ END;
 $$
     LANGUAGE 'plpgsql';
 
+
+CREATE OR REPLACE FUNCTION update_subject_result()
+    RETURNS trigger AS
+$$
+BEGIN
+    CASE
+        WHEN old.examResult != new.examResult THEN
+            new.mark = new.mark + new.examResult - old.examResult;
+        WHEN old.examResult = new.examResult THEN
+            RETURN new;
+        END CASE;
+
+    RETURN new;
+END;
+$$
+    LANGUAGE 'plpgsql';
+
+
+CREATE TRIGGER update_exam
+    BEFORE UPDATE
+    ON subjects_results
+    FOR EACH ROW
+EXECUTE PROCEDURE update_subject_result();
+
 CREATE TRIGGER update_results
     BEFORE UPDATE
     ON classes_progresses

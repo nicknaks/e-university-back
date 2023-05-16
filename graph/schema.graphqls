@@ -29,6 +29,9 @@ type Mutation {
     absentSet(input: absentSetInput!): [ClassProgress!] @isAuthenticated
     attendedSet(input: absentSetInput!): [ClassProgress!] @isAuthenticated
     examResultSet(input: examResultSetInput!): SubjectResult @isAuthenticated
+    subjectResultSet(input: subjectResultSetInput!): SubjectResult @isAuthenticated
+    totalMarkSet(input: totalMarkSetInput): SubjectResult @isAuthenticated
+    classNameSet(input: classNameSetInput): Class @isAuthenticated
 }
 
 # енамы
@@ -55,6 +58,23 @@ enum LessonType {
 }
 
 # input
+input classNameSetInput {
+    classID: String!
+    name: String!
+}
+
+input subjectResultSetInput {
+    subjectProgressID: String!
+    firstModuleMark: Boolean
+    secondModuleMark: Boolean
+    thirdModuleMark: Boolean
+}
+
+input totalMarkSetInput {
+    subjectProgressID: String!
+    totalMark: Int!
+}
+
 input subjectResultsFilter {
     subjectID: String
     studentID: String

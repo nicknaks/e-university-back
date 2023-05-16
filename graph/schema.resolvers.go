@@ -85,6 +85,11 @@ func (r *mutationResolver) SubjectCreate(ctx context.Context, input model.Subjec
 		return nil, err
 	}
 
+	err = r.Storage.CreateSubjectsResultsForSubject(ctx, subject.ID, subject.GroupID)
+	if err != nil {
+		return nil, err
+	}
+
 	return models.ToSubject(subject), nil
 }
 
@@ -108,6 +113,12 @@ func (r *mutationResolver) LessonCreate(ctx context.Context, input model.LessonC
 	}
 
 	lesson, err := r.Storage.LessonCreate(ctx, input, subjects[0])
+	if err != nil {
+		return nil, err
+	}
+
+	// todo:: добавить создание классов по предмету
+	// todo:: добавить создание прогресса по предмету
 	return models.ToLesson(lesson), err
 }
 
@@ -168,6 +179,50 @@ func (r *mutationResolver) ExamResultSet(ctx context.Context, input model.ExamRe
 	}
 
 	return models.ToSubjectResult(res), nil
+}
+
+func (r *mutationResolver) SubjectResultSet(ctx context.Context, input model.SubjectResultSetInput) (*model.SubjectResult, error) {
+	m := map[string]interface{}{}
+
+	if input.FirstModuleMark != nil && *input.FirstModuleMark {
+		m["firstmodulemark"] = 1
+	}
+
+	if input.SecondModuleMark != nil && *input.SecondModuleMark {
+		m["secondmodulemark"] = 1
+	}
+
+	if input.ThirdModuleMark != nil && *input.ThirdModuleMark {
+		m["thirdmodulemark"] = 1
+	}
+
+	sub, err := r.Storage.UpdateSubjectResultByID(ctx, input.SubjectProgressID, m)
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToSubjectResult(sub), nil
+}
+
+func (r *mutationResolver) TotalMarkSet(ctx context.Context, input *model.TotalMarkSetInput) (*model.SubjectResult, error) {
+	sub, err := r.Storage.UpdateSubjectResultByID(ctx, input.SubjectProgressID, map[string]interface{}{
+		"mark": input.TotalMark,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return models.ToSubjectResult(sub), nil
+}
+
+func (r *mutationResolver) ClassNameSet(ctx context.Context, input *model.ClassNameSetInput) (*model.Class, error) {
+	sub, err := r.Storage.UpdateClass(ctx, input.ClassID, map[string]interface{}{
+		"name": input.Name,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return models.ToClass(sub), nil
 }
 
 func (r *queryResolver) Faculties(ctx context.Context) ([]*model.Faculty, error) {
