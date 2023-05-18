@@ -198,7 +198,7 @@ func (s *Storage) ListLessons(ctx context.Context, filter model.ScheduleFilter) 
 		query = query.Where(sq.Eq{"groupId": *filter.GroupID})
 	}
 	if filter.TeacherID != nil {
-		query = query.Where(sq.Eq{"teacherId": *filter.TeacherID})
+		query = query.Where(sq.Or{sq.Eq{"teacherId": *filter.TeacherID}, sq.Eq{"addteacherId": *filter.TeacherID}})
 	}
 
 	var res []*models.Lesson

@@ -49,6 +49,17 @@ func (r *lessonResolver) Group(ctx context.Context, obj *model.Lesson) (*model.G
 	}, nil
 }
 
+func (r *lessonResolver) AddTeacher(ctx context.Context, obj *model.Lesson) (*model.Teacher, error) {
+	if obj.AddTeacherID == nil {
+		return nil, nil
+	}
+	teachers, err := r.Storage.ListTeachers(ctx, &model.TeachersFilter{IDIn: []string{*obj.AddTeacherID}})
+	if err != nil {
+		return nil, err
+	}
+	return models.ToTeacher(teachers[0]), nil
+}
+
 func (r *mutationResolver) Login(ctx context.Context, login string, password string) (bool, error) {
 	token, err := r.Storage.GetToken(ctx, login, password)
 	if err != nil {
@@ -378,6 +389,17 @@ func (r *subjectResolver) Teacher(ctx context.Context, obj *model.Subject) (*mod
 		return nil, nil
 	}
 	teachers, err := r.Storage.ListTeachers(ctx, &model.TeachersFilter{IDIn: []string{*obj.TeacherID}})
+	if err != nil {
+		return nil, err
+	}
+	return models.ToTeacher(teachers[0]), nil
+}
+
+func (r *subjectResolver) AddTeacher(ctx context.Context, obj *model.Subject) (*model.Teacher, error) {
+	if obj.AddTeacherID == nil {
+		return nil, nil
+	}
+	teachers, err := r.Storage.ListTeachers(ctx, &model.TeachersFilter{IDIn: []string{*obj.AddTeacherID}})
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,9 @@
 package models
 
-import "back/graph/model"
+import (
+	"back/graph/model"
+	"gopkg.in/guregu/null.v4/zero"
+)
 
 type Lesson struct {
 	ID            string  `json:"id"`
@@ -14,6 +17,7 @@ type Lesson struct {
 	Cabinet       *string `json:"cabinet"`
 	IsDenominator bool    `json:"isDenominator"`
 	IsNumerator   bool    `json:"isNumerator"`
+	AddTeacherID  zero.String
 }
 
 func ParseApiLessonType(lessonType model.LessonType) int {
@@ -61,6 +65,7 @@ func ToLesson(lesson *Lesson) *model.Lesson {
 		Cabinet:       lesson.Cabinet,
 		IsDenominator: lesson.IsDenominator,
 		IsNumerator:   lesson.IsNumerator,
+		AddTeacherID:  lesson.AddTeacherID.Ptr(),
 	}
 }
 

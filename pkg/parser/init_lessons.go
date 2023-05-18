@@ -4,6 +4,7 @@ import (
 	"back/internal/store"
 	"context"
 	"fmt"
+	"gopkg.in/guregu/null.v4/zero"
 	"strings"
 )
 
@@ -11,6 +12,7 @@ func ExtractTeachers(ctx context.Context, db store.Storage, lessons []Lesson) er
 	teachers := map[string]string{}
 	// store teachers
 	for i, lesson := range lessons {
+		var addTeacherID string
 		var id string
 		var ok bool
 
@@ -20,6 +22,10 @@ func ExtractTeachers(ctx context.Context, db store.Storage, lessons []Lesson) er
 		}
 
 		if strings.ContainsRune(lesson.Teacher, ',') {
+			parsedTeachers := strings.SplitAfter(lesson.Teacher, ",")
+			if len(parsedTeachers) >= 2 {
+				lesson.AddTeacher = zero.StringFrom(strings.TrimSpace(strings.TrimPrefix(strings.SplitAfter(lesson.Teacher, ",")[1], ",")))
+			}
 			lesson.Teacher = strings.TrimSpace(strings.TrimSuffix(strings.SplitAfter(lesson.Teacher, ",")[0], ","))
 		}
 
@@ -35,7 +41,23 @@ func ExtractTeachers(ctx context.Context, db store.Storage, lessons []Lesson) er
 			}
 			teachers[lesson.Teacher] = id
 		}
+		if lesson.AddTeacher.Valid {
+			if addTeacherID, ok = teachers[lesson.AddTeacher.String]; !ok {
+				query := db.Builder().Insert("teachers").SetMap(map[string]interface{}{
+					"name": lesson.AddTeacher,
+				}).Suffix("Returning id")
+
+				err := db.Getx(ctx, &addTeacherID, query)
+
+				if err != nil {
+					return err
+				}
+				teachers[lesson.AddTeacher.String] = addTeacherID
+			}
+		}
+
 		lessons[i].TeacherID = id
+		lessons[i].AddTeacherID = zero.StringFrom(addTeacherID)
 	}
 
 	// store subjects
@@ -48,9 +70,10 @@ func ExtractTeachers(ctx context.Context, db store.Storage, lessons []Lesson) er
 		}
 
 		query := db.Builder().Insert("subjects").SetMap(map[string]interface{}{
-			"teacherId": lesson.TeacherID,
-			"groupId":   lesson.GroupID,
-			"name":      lesson.Name,
+			"teacherId":    lesson.TeacherID,
+			"addteacherid": lesson.AddTeacherID,
+			"groupId":      lesson.GroupID,
+			"name":         lesson.Name,
 		}).Suffix("ON CONFLICT (groupId, name)").Suffix("DO UPDATE SET name=EXCLUDED.name RETURNING id")
 
 		err := db.Getx(ctx, &id, query)
@@ -80,6 +103,7 @@ func ExtractTeachers(ctx context.Context, db store.Storage, lessons []Lesson) er
 			"isDenominator": lesson.IsDenominator,
 			"isNumerator":   lesson.IsNumerator,
 			"name":          lesson.Name,
+			"addteacherid":  lesson.AddTeacherID,
 		})
 		err := db.Exec(ctx, query)
 		if err != nil {

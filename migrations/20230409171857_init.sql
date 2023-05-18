@@ -53,11 +53,12 @@ CREATE TABLE users
 
 CREATE TABLE subjects
 (
-    id        uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    teacherId uuid NOT NULL REFERENCES teachers (id),
-    groupId   uuid NOT NULL REFERENCES groups (id),
-    name      text,
-    type      int                       DEFAULT 1
+    id           uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    teacherId    uuid NOT NULL REFERENCES teachers (id),
+    groupId      uuid NOT NULL REFERENCES groups (id),
+    name         text,
+    type         int                       DEFAULT 1,
+    addTeacherId uuid REFERENCES teachers (id)
 );
 
 CREATE UNIQUE INDEX ON subjects (groupId, name);
@@ -74,7 +75,8 @@ CREATE TABLE lesson
     teacherId     uuid REFERENCES teachers (id),
     cabinet       text,
     isDenominator bool                      DEFAULT FALSE,
-    isNumerator   bool                      DEFAULT FALSE
+    isNumerator   bool                      DEFAULT FALSE,
+    addTeacherId  uuid REFERENCES teachers (id)
 );
 
 CREATE UNIQUE INDEX ON lesson (groupid, couple, day, isNumerator);
@@ -121,20 +123,29 @@ CREATE OR REPLACE FUNCTION update_results_proc()
 $$
 DECLARE
     currentSubjectID uuid;
-    currentModule int;
+    currentModule    int;
 BEGIN
-    SELECT classes.subjectId, classes.module into currentSubjectID, currentModule FROM classes WHERE classes.id = new.classId;
+    SELECT classes.subjectId, classes.module
+    into currentSubjectID, currentModule
+    FROM classes
+    WHERE classes.id = new.classId;
 
     CASE
-        WHEN currentModule = 1 THEN
-            UPDATE subjects_results SET firstModuleMark = firstModuleMark + new.mark - old.mark, mark = mark + new.mark - old.mark
-            WHERE subjects_results.subjectId = currentSubjectID AND subjects_results.studentId = new.studentId;
-        WHEN currentModule = 2 THEN
-            UPDATE subjects_results SET secondModuleMark = secondModuleMark + new.mark - old.mark, mark = mark + new.mark - old.mark
-            WHERE subjects_results.subjectId = currentSubjectID AND subjects_results.studentId = new.studentId;
-        WHEN currentModule = 3 THEN
-            UPDATE subjects_results SET thirdModuleMark = thirdModuleMark + new.mark - old.mark, mark = mark + new.mark - old.mark
-            WHERE subjects_results.subjectId = currentSubjectID AND subjects_results.studentId = new.studentId;
+        WHEN currentModule = 1 THEN UPDATE subjects_results
+                                    SET firstModuleMark = firstModuleMark + new.mark - old.mark,
+                                        mark            = mark + new.mark - old.mark
+                                    WHERE subjects_results.subjectId = currentSubjectID
+                                      AND subjects_results.studentId = new.studentId;
+        WHEN currentModule = 2 THEN UPDATE subjects_results
+                                    SET secondModuleMark = secondModuleMark + new.mark - old.mark,
+                                        mark             = mark + new.mark - old.mark
+                                    WHERE subjects_results.subjectId = currentSubjectID
+                                      AND subjects_results.studentId = new.studentId;
+        WHEN currentModule = 3 THEN UPDATE subjects_results
+                                    SET thirdModuleMark = thirdModuleMark + new.mark - old.mark,
+                                        mark            = mark + new.mark - old.mark
+                                    WHERE subjects_results.subjectId = currentSubjectID
+                                      AND subjects_results.studentId = new.studentId;
         END CASE;
 
     RETURN new;
@@ -148,10 +159,8 @@ CREATE OR REPLACE FUNCTION update_subject_result()
 $$
 BEGIN
     CASE
-        WHEN old.examResult != new.examResult THEN
-            new.mark = new.mark + new.examResult - old.examResult;
-        WHEN old.examResult = new.examResult THEN
-            RETURN new;
+        WHEN old.examResult != new.examResult THEN new.mark = new.mark + new.examResult - old.examResult;
+        WHEN old.examResult = new.examResult THEN RETURN new;
         END CASE;
 
     RETURN new;

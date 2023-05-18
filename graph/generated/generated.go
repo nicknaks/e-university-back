@@ -94,6 +94,8 @@ type ComplexityRoot struct {
 	}
 
 	Lesson struct {
+		AddTeacher    func(childComplexity int) int
+		AddTeacherID  func(childComplexity int) int
 		Cabinet       func(childComplexity int) int
 		Couple        func(childComplexity int) int
 		Day           func(childComplexity int) int
@@ -145,16 +147,19 @@ type ComplexityRoot struct {
 	}
 
 	Subject struct {
-		Group     func(childComplexity int) int
-		GroupID   func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Name      func(childComplexity int) int
-		Teacher   func(childComplexity int) int
-		TeacherID func(childComplexity int) int
-		Type      func(childComplexity int) int
+		AddTeacher   func(childComplexity int) int
+		AddTeacherID func(childComplexity int) int
+		Group        func(childComplexity int) int
+		GroupID      func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Name         func(childComplexity int) int
+		Teacher      func(childComplexity int) int
+		TeacherID    func(childComplexity int) int
+		Type         func(childComplexity int) int
 	}
 
 	SubjectResult struct {
+		CountAbsent      func(childComplexity int) int
 		ExamResult       func(childComplexity int) int
 		FirstModuleMark  func(childComplexity int) int
 		ID               func(childComplexity int) int
@@ -185,6 +190,8 @@ type ClassResolver interface {
 type LessonResolver interface {
 	Teacher(ctx context.Context, obj *model.Lesson) (*model.Teacher, error)
 	Group(ctx context.Context, obj *model.Lesson) (*model.Group, error)
+
+	AddTeacher(ctx context.Context, obj *model.Lesson) (*model.Teacher, error)
 }
 type MutationResolver interface {
 	Login(ctx context.Context, login string, password string) (bool, error)
@@ -216,6 +223,8 @@ type QueryResolver interface {
 type SubjectResolver interface {
 	Group(ctx context.Context, obj *model.Subject) (*model.Group, error)
 	Teacher(ctx context.Context, obj *model.Subject) (*model.Teacher, error)
+
+	AddTeacher(ctx context.Context, obj *model.Subject) (*model.Teacher, error)
 }
 type SubjectResultResolver interface {
 	Subject(ctx context.Context, obj *model.SubjectResult) ([]*model.Subject, error)
@@ -438,6 +447,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Group.Students(childComplexity), true
+
+	case "Lesson.addTeacher":
+		if e.complexity.Lesson.AddTeacher == nil {
+			break
+		}
+
+		return e.complexity.Lesson.AddTeacher(childComplexity), true
+
+	case "Lesson.addTeacherID":
+		if e.complexity.Lesson.AddTeacherID == nil {
+			break
+		}
+
+		return e.complexity.Lesson.AddTeacherID(childComplexity), true
 
 	case "Lesson.cabinet":
 		if e.complexity.Lesson.Cabinet == nil {
@@ -807,6 +830,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Student.Name(childComplexity), true
 
+	case "Subject.addTeacher":
+		if e.complexity.Subject.AddTeacher == nil {
+			break
+		}
+
+		return e.complexity.Subject.AddTeacher(childComplexity), true
+
+	case "Subject.addTeacherID":
+		if e.complexity.Subject.AddTeacherID == nil {
+			break
+		}
+
+		return e.complexity.Subject.AddTeacherID(childComplexity), true
+
 	case "Subject.group":
 		if e.complexity.Subject.Group == nil {
 			break
@@ -855,6 +892,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Subject.Type(childComplexity), true
+
+	case "SubjectResult.countAbsent":
+		if e.complexity.SubjectResult.CountAbsent == nil {
+			break
+		}
+
+		return e.complexity.SubjectResult.CountAbsent(childComplexity), true
 
 	case "SubjectResult.examResult":
 		if e.complexity.SubjectResult.ExamResult == nil {
@@ -1199,6 +1243,7 @@ type SubjectResult {
     """ оценка за предмет """
     total: Int!
     examResult: Int!
+    countAbsent: Int!
 }
 
 type Class {
@@ -1236,6 +1281,8 @@ type Subject {
     group: Group @goField(forceResolver: true)
     teacher: Teacher @goField(forceResolver: true)
     type: SubjectType!
+    addTeacherID: String
+    addTeacher: Teacher @goField(forceResolver: true)
 }
 
 type Lesson {
@@ -1252,6 +1299,8 @@ type Lesson {
     isNumerator: Boolean!
     teacher: Teacher @goField(forceResolver: true)
     group: Group @goField(forceResolver: true)
+    addTeacherID: String
+    addTeacher: Teacher @goField(forceResolver: true)
 }
 
 type Faculty {
@@ -3084,6 +3133,70 @@ func (ec *executionContext) _Lesson_group(ctx context.Context, field graphql.Col
 	return ec.marshalOGroup2ᚖbackᚋgraphᚋmodelᚐGroup(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Lesson_addTeacherID(ctx context.Context, field graphql.CollectedField, obj *model.Lesson) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Lesson",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AddTeacherID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Lesson_addTeacher(ctx context.Context, field graphql.CollectedField, obj *model.Lesson) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Lesson",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Lesson().AddTeacher(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Teacher)
+	fc.Result = res
+	return ec.marshalOTeacher2ᚖbackᚋgraphᚋmodelᚐTeacher(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4663,6 +4776,70 @@ func (ec *executionContext) _Subject_type(ctx context.Context, field graphql.Col
 	return ec.marshalNSubjectType2backᚋgraphᚋmodelᚐSubjectType(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Subject_addTeacherID(ctx context.Context, field graphql.CollectedField, obj *model.Subject) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Subject",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AddTeacherID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Subject_addTeacher(ctx context.Context, field graphql.CollectedField, obj *model.Subject) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Subject",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subject().AddTeacher(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Teacher)
+	fc.Result = res
+	return ec.marshalOTeacher2ᚖbackᚋgraphᚋmodelᚐTeacher(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _SubjectResult_id(ctx context.Context, field graphql.CollectedField, obj *model.SubjectResult) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4994,6 +5171,41 @@ func (ec *executionContext) _SubjectResult_examResult(ctx context.Context, field
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ExamResult, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SubjectResult_countAbsent(ctx context.Context, field graphql.CollectedField, obj *model.SubjectResult) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SubjectResult",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CountAbsent, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7551,6 +7763,30 @@ func (ec *executionContext) _Lesson(ctx context.Context, sel ast.SelectionSet, o
 				return innerFunc(ctx)
 
 			})
+		case "addTeacherID":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Lesson_addTeacherID(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "addTeacher":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Lesson_addTeacher(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8087,6 +8323,30 @@ func (ec *executionContext) _Subject(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "addTeacherID":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Subject_addTeacherID(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "addTeacher":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Subject_addTeacher(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8208,6 +8468,16 @@ func (ec *executionContext) _SubjectResult(ctx context.Context, sel ast.Selectio
 		case "examResult":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._SubjectResult_examResult(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "countAbsent":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._SubjectResult_countAbsent(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)

@@ -6,11 +6,12 @@ import (
 )
 
 type Subject struct {
-	ID        string
-	TeacherID zero.String
-	GroupID   string
-	Name      zero.String
-	Type      int
+	ID           string
+	TeacherID    zero.String
+	GroupID      string
+	Name         zero.String
+	Type         int
+	AddTeacherID zero.String
 }
 
 func ToSubject(lesson *Subject) *model.Subject {
@@ -19,11 +20,12 @@ func ToSubject(lesson *Subject) *model.Subject {
 	}
 
 	return &model.Subject{
-		ID:        lesson.ID,
-		TeacherID: lesson.TeacherID.Ptr(),
-		GroupID:   lesson.GroupID,
-		Name:      lesson.Name.Ptr(),
-		Type:      parseSubjectType(lesson.Type),
+		ID:           lesson.ID,
+		TeacherID:    lesson.TeacherID.Ptr(),
+		GroupID:      lesson.GroupID,
+		Name:         lesson.Name.Ptr(),
+		Type:         parseSubjectType(lesson.Type),
+		AddTeacherID: lesson.AddTeacherID.Ptr(),
 	}
 }
 

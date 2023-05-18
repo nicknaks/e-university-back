@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gocolly/colly"
+	"gopkg.in/guregu/null.v4/zero"
 	"strings"
 )
 
@@ -19,6 +20,8 @@ type Lesson struct {
 	Place         string
 	TeacherID     string
 	SubjectID     string
+	AddTeacherID  zero.String
+	AddTeacher    zero.String
 }
 
 // нужно сохранить в БД учителей, предметы и успеваемост

@@ -29,6 +29,7 @@ func ToSubjectResult(lesson *SubjectResult) *model.SubjectResult {
 		ThirdModuleMark:  lesson.ThirdModuleMark,
 		Mark:             lesson.Mark,
 		ExamResult:       lesson.ExamResult,
+		CountAbsent:      2,
 	}
 }
 func ToSubjectResults(lessons []*SubjectResult) []*model.SubjectResult {

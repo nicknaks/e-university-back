@@ -5,7 +5,6 @@ import (
 	"back/internal/models"
 	"back/internal/store"
 	"context"
-	"fmt"
 	"gopkg.in/guregu/null.v4/zero"
 	"time"
 )
@@ -27,14 +26,12 @@ func InitParser(ctx context.Context, db store.Storage) error {
 			if _, week := firstMonday.ISOWeek(); week%2 == 0 {
 				// пара по числителям
 				if lesson.IsNumerator == true {
-					fmt.Println(firstMonday)
 					firstMonday = firstMonday.AddDate(0, 0, 7)
 					continue
 				}
 			} else {
 				// пара по знаменателям
 				if lesson.IsDenominator == true {
-					fmt.Println(firstMonday)
 					firstMonday = firstMonday.AddDate(0, 0, 7)
 					continue
 				}
@@ -54,7 +51,6 @@ func InitParser(ctx context.Context, db store.Storage) error {
 				return err
 			}
 
-			fmt.Println(firstMonday)
 			firstMonday = firstMonday.AddDate(0, 0, 7)
 		}
 	}

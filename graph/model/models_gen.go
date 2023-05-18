@@ -66,6 +66,8 @@ type Lesson struct {
 	IsNumerator   bool       `json:"isNumerator"`
 	Teacher       *Teacher   `json:"teacher"`
 	Group         *Group     `json:"group"`
+	AddTeacherID  *string    `json:"addTeacherID"`
+	AddTeacher    *Teacher   `json:"addTeacher"`
 }
 
 type Student struct {
@@ -75,13 +77,15 @@ type Student struct {
 }
 
 type Subject struct {
-	ID        string      `json:"id"`
-	TeacherID *string     `json:"teacherID"`
-	GroupID   string      `json:"groupID"`
-	Name      *string     `json:"name"`
-	Group     *Group      `json:"group"`
-	Teacher   *Teacher    `json:"teacher"`
-	Type      SubjectType `json:"type"`
+	ID           string      `json:"id"`
+	TeacherID    *string     `json:"teacherID"`
+	GroupID      string      `json:"groupID"`
+	Name         *string     `json:"name"`
+	Group        *Group      `json:"group"`
+	Teacher      *Teacher    `json:"teacher"`
+	Type         SubjectType `json:"type"`
+	AddTeacherID *string     `json:"addTeacherID"`
+	AddTeacher   *Teacher    `json:"addTeacher"`
 }
 
 type SubjectResult struct {
@@ -94,8 +98,9 @@ type SubjectResult struct {
 	ThirdModuleMark  int        `json:"thirdModuleMark"`
 	Mark             int        `json:"mark"`
 	//  оценка за предмет
-	Total      int `json:"total"`
-	ExamResult int `json:"examResult"`
+	Total       int `json:"total"`
+	ExamResult  int `json:"examResult"`
+	CountAbsent int `json:"countAbsent"`
 }
 
 type Teacher struct {

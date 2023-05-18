@@ -172,6 +172,7 @@ type SubjectResult {
     """ оценка за предмет """
     total: Int!
     examResult: Int!
+    countAbsent: Int!
 }
 
 type Class {
@@ -209,6 +210,8 @@ type Subject {
     group: Group @goField(forceResolver: true)
     teacher: Teacher @goField(forceResolver: true)
     type: SubjectType!
+    addTeacherID: String
+    addTeacher: Teacher @goField(forceResolver: true)
 }
 
 type Lesson {
@@ -225,6 +228,8 @@ type Lesson {
     isNumerator: Boolean!
     teacher: Teacher @goField(forceResolver: true)
     group: Group @goField(forceResolver: true)
+    addTeacherID: String
+    addTeacher: Teacher @goField(forceResolver: true)
 }
 
 type Faculty {
