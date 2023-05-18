@@ -68,7 +68,7 @@ func (s *Storage) ListSubjects(ctx context.Context, filter *model.SubjectsFilter
 			query = query.Where(sq.Eq{"groupid": *filter.GroupID})
 		}
 		if filter.TeacherID != nil {
-			query = query.Where(sq.Eq{"teacherid": *filter.TeacherID})
+			query = query.Where(sq.Or{sq.Eq{"teacherId": *filter.TeacherID}, sq.Eq{"addteacherId": *filter.TeacherID}})
 		}
 		if len(filter.ID) > 0 {
 			query = query.Where(sq.Eq{"id": filter.ID})
