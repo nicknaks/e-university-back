@@ -98,24 +98,28 @@ CREATE TABLE classes
 
 CREATE TABLE classes_progresses
 (
-    id        uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    classId   uuid NOT NULL REFERENCES classes (id),
-    studentId uuid NOT NULL REFERENCES students (id),
-    isAbsent  bool NOT NULL             DEFAULT false,
+    id        uuid  NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    classId   uuid  NOT NULL REFERENCES classes (id),
+    studentId uuid  NOT NULL REFERENCES students (id),
+    isAbsent  bool  NOT NULL             DEFAULT false,
     teacherId uuid REFERENCES teachers (id),
-    mark      int  NOT NULL             DEFAULT 0
+    mark      float NOT NULL             DEFAULT 0
 );
 
 CREATE TABLE subjects_results
 (
-    id               uuid NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-    studentId        uuid NOT NULL REFERENCES students (id),
-    subjectId        uuid NOT NULL REFERENCES subjects (id),
-    firstModuleMark  int  NOT NULL             DEFAULT 0,
-    secondModuleMark int  NOT NULL             DEFAULT 0,
-    thirdModuleMark  int  NOT NULL             DEFAULT 0,
-    mark             int  NOT NULL             DEFAULT 0,
-    examResult       int  NOT NULL             DEFAULT 0
+    id                      uuid  NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+    studentId               uuid  NOT NULL REFERENCES students (id),
+    subjectId               uuid  NOT NULL REFERENCES subjects (id),
+    firstModuleMark         float NOT NULL             DEFAULT 0,
+    firstModuleMarkComment  text,
+    secondModuleMark        float NOT NULL             DEFAULT 0,
+    secondModuleMarkComment text,
+    thirdModuleMark         float NOT NULL             DEFAULT 0,
+    thirdModuleMarkComment  text,
+    mark                    float NOT NULL             DEFAULT 0,
+    examResult              int   NOT NULL             DEFAULT 0,
+    examResultComment       text
 );
 
 CREATE OR REPLACE FUNCTION update_results_proc()

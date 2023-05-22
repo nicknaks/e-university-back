@@ -58,6 +58,10 @@ func main() {
 	router.Use(auth_service.InjectHTTPMiddleware())
 	router.Handle("/", playground.Handler("Starwars", "/query"))
 	router.Handle("/query", srv)
+	//router.Get("/download", graph.DownloadHandler)
+	router.Route("/download", func(r chi.Router) {
+		r.Handle("/*", graph.Handler{Storage: resolver.Storage})
+	})
 
 	data, err := parser.ParseFaculties(nil)
 	if err != nil {

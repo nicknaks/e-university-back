@@ -32,6 +32,7 @@ type Mutation {
     subjectResultSet(input: subjectResultSetInput!): SubjectResult @isAuthenticated
     totalMarkSet(input: totalMarkSetInput): SubjectResult @isAuthenticated
     classNameSet(input: classNameSetInput): Class @isAuthenticated
+    moduleSetResult(input: moduleSetResultInput!): SubjectResult! @isAuthenticated
 }
 
 # енамы
@@ -58,6 +59,13 @@ enum LessonType {
 }
 
 # input
+input moduleSetResultInput {
+    subjectResultID: String!
+    module: Int!
+    mark: Int!
+    comment: String
+}
+
 input classNameSetInput {
     classID: String!
     name: String!
@@ -91,11 +99,12 @@ input absentSetInput {
 
 input markCreateInput {
     classProgressID: String!
-    mark: Int!
+    mark: Float!
 }
 
 input classesProgressFilter {
     classID: String
+    classIDIn: [String!]
 }
 
 input classesFilter {
@@ -165,14 +174,18 @@ type SubjectResult {
     studentID: String!
     subjectID: String!
     subject: [Subject!]  @goField(forceResolver: true)
-    firstModuleMark: Int!
-    secondModuleMark: Int!
-    thirdModuleMark: Int!
-    mark: Int!
+    firstModuleMark: Float!
+    secondModuleMark: Float!
+    thirdModuleMark: Float!
+    mark: Float!
     """ оценка за предмет """
     total: Int!
     examResult: Int!
     countAbsent: Int!
+    firstModuleMarkComment: String
+    secondModuleMarkComment: String
+    thirdModuleMarkComment: String
+    examResultComment: String
 }
 
 type Class {
@@ -194,7 +207,7 @@ type ClassProgress {
     studentID: String!
     isAbsent: Boolean!
     teacherID: String
-    mark: Int!
+    mark: Float!
 }
 
 type Teacher {

@@ -27,7 +27,7 @@ type ClassProgress struct {
 	StudentID string  `json:"studentID"`
 	IsAbsent  bool    `json:"isAbsent"`
 	TeacherID *string `json:"teacherID"`
-	Mark      int     `json:"mark"`
+	Mark      float64 `json:"mark"`
 }
 
 type Department struct {
@@ -93,14 +93,18 @@ type SubjectResult struct {
 	StudentID        string     `json:"studentID"`
 	SubjectID        string     `json:"subjectID"`
 	Subject          []*Subject `json:"subject"`
-	FirstModuleMark  int        `json:"firstModuleMark"`
-	SecondModuleMark int        `json:"secondModuleMark"`
-	ThirdModuleMark  int        `json:"thirdModuleMark"`
-	Mark             int        `json:"mark"`
+	FirstModuleMark  float64    `json:"firstModuleMark"`
+	SecondModuleMark float64    `json:"secondModuleMark"`
+	ThirdModuleMark  float64    `json:"thirdModuleMark"`
+	Mark             float64    `json:"mark"`
 	//  оценка за предмет
-	Total       int `json:"total"`
-	ExamResult  int `json:"examResult"`
-	CountAbsent int `json:"countAbsent"`
+	Total                   int     `json:"total"`
+	ExamResult              int     `json:"examResult"`
+	CountAbsent             int     `json:"countAbsent"`
+	FirstModuleMarkComment  *string `json:"firstModuleMarkComment"`
+	SecondModuleMarkComment *string `json:"secondModuleMarkComment"`
+	ThirdModuleMarkComment  *string `json:"thirdModuleMarkComment"`
+	ExamResultComment       *string `json:"examResultComment"`
 }
 
 type Teacher struct {
@@ -130,7 +134,8 @@ type ClassesFilter struct {
 }
 
 type ClassesProgressFilter struct {
-	ClassID *string `json:"classID"`
+	ClassID   *string  `json:"classID"`
+	ClassIDIn []string `json:"classIDIn"`
 }
 
 type ExamResultSetInput struct {
@@ -156,8 +161,15 @@ type LessonCreateInput struct {
 }
 
 type MarkCreateInput struct {
-	ClassProgressID string `json:"classProgressID"`
-	Mark            int    `json:"mark"`
+	ClassProgressID string  `json:"classProgressID"`
+	Mark            float64 `json:"mark"`
+}
+
+type ModuleSetResultInput struct {
+	SubjectResultID string  `json:"subjectResultID"`
+	Module          int     `json:"module"`
+	Mark            int     `json:"mark"`
+	Comment         *string `json:"comment"`
 }
 
 type ScheduleFilter struct {

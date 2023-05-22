@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/samber/lo"
+	"gopkg.in/guregu/null.v4/zero"
 )
 
 func (r *classResolver) StudentProgress(ctx context.Context, obj *model.Class) ([]*model.ClassProgress, error) {
@@ -234,6 +235,33 @@ func (r *mutationResolver) ClassNameSet(ctx context.Context, input *model.ClassN
 		return nil, err
 	}
 	return models.ToClass(sub), nil
+}
+
+func (r *mutationResolver) ModuleSetResult(ctx context.Context, input model.ModuleSetResultInput) (*model.SubjectResult, error) {
+	m := map[string]interface{}{}
+	switch input.Module {
+	case 1:
+		m["firstmodulemark"] = input.Mark
+		m["firstmodulemarkcomment"] = zero.StringFromPtr(input.Comment)
+	case 2:
+		m["secondmodulemark"] = input.Mark
+		m["secondmodulemarkcomment"] = zero.StringFromPtr(input.Comment)
+	case 3:
+		m["thirdmodulemark"] = input.Mark
+		m["thirdmodulemarkcomment"] = zero.StringFromPtr(input.Comment)
+	case 4:
+		m["examresult"] = input.Mark
+		m["examresultcomment"] = zero.StringFromPtr(input.Comment)
+	default:
+		return nil, fmt.Errorf("undefined module")
+	}
+
+	res, err := r.Storage.UpdateSubjectResultByID(ctx, input.SubjectResultID, m)
+	if err != nil {
+		return nil, fmt.Errorf("Storage.UpdateSubjectResultByID err %w", err)
+	}
+
+	return models.ToSubjectResult(res), nil
 }
 
 func (r *queryResolver) Faculties(ctx context.Context) ([]*model.Faculty, error) {

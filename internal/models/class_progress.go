@@ -11,7 +11,7 @@ type ClassProgress struct {
 	StudentID string
 	IsAbsent  bool
 	TeacherID zero.String
-	Mark      int
+	Mark      float64
 }
 
 func ToClassProgress(lesson *ClassProgress) *model.ClassProgress {

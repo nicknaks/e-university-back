@@ -24,7 +24,7 @@ func InitData(ctx context.Context, db store.Storage, data []Fac) ([]Fac, error) 
 		for j, dep := range f.Deps {
 			query = db.Builder().Insert("departments").SetMap(map[string]interface{}{
 				"number":    dep.Number,
-				"name":      "имя)",
+				"name":      " ",
 				"facultyId": id,
 			}).Suffix("RETURNING id")
 

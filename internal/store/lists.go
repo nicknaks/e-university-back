@@ -114,6 +114,9 @@ func (s *Storage) ListClassesProgresses(ctx context.Context, filter *model.Class
 		if filter.ClassID != nil {
 			query = query.Where(sq.Eq{"classid": *filter.ClassID})
 		}
+		if len(filter.ClassIDIn) > 0 {
+			query = query.Where(sq.Eq{"classid": filter.ClassIDIn})
+		}
 	}
 
 	var res []*models.ClassProgress
