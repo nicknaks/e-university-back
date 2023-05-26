@@ -4,8 +4,6 @@ import (
 	"back/graph"
 	"back/graph/generated"
 	"back/internal/auth_service"
-	"back/pkg/parser"
-	"context"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -58,42 +56,46 @@ func main() {
 	router.Use(auth_service.InjectHTTPMiddleware())
 	router.Handle("/", playground.Handler("Starwars", "/query"))
 	router.Handle("/query", srv)
-	//router.Get("/download", graph.DownloadHandler)
 	router.Route("/download", func(r chi.Router) {
+		r.Use(cors.New(cors.Options{
+			AllowedOrigins:   []string{"http://localhost:8080", "http://localhost:3000"},
+			AllowCredentials: true,
+			Debug:            true,
+		}).Handler)
 		r.Handle("/*", graph.Handler{Storage: resolver.Storage})
 	})
 
-	data, err := parser.ParseFaculties(nil)
-	if err != nil {
-		panic(err)
-	}
+	//data, err := parser.ParseFaculties(nil)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//data, err = parser.InitData(context.Background(), resolver.Storage, data)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//lessons, err := parser.ParseSchedule(nil, data)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//err = parser.ExtractTeachers(context.Background(), resolver.Storage, lessons)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//err = parser.InitUsers(context.Background(), resolver.Storage)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//err = parser.InitParser(context.Background(), resolver.Storage)
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	data, err = parser.InitData(context.Background(), resolver.Storage, data)
-	if err != nil {
-		panic(err)
-	}
-
-	lessons, err := parser.ParseSchedule(nil, data)
-	if err != nil {
-		panic(err)
-	}
-
-	err = parser.ExtractTeachers(context.Background(), resolver.Storage, lessons)
-	if err != nil {
-		panic(err)
-	}
-
-	err = parser.InitUsers(context.Background(), resolver.Storage)
-	if err != nil {
-		panic(err)
-	}
-
-	err = parser.InitParser(context.Background(), resolver.Storage)
-	if err != nil {
-		panic(err)
-	}
-
-	err = http.ListenAndServe(":8090", router)
+	err := http.ListenAndServe(":8090", router)
 	if err != nil {
 		panic(err)
 	}

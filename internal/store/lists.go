@@ -96,7 +96,7 @@ func (s *Storage) ListClasses(ctx context.Context, filter *model.ClassesFilter) 
 		}
 	}
 
-	query = query.OrderBy("day ASC")
+	query = query.OrderBy("day ASC, type ASC")
 
 	var res []*models.Class
 
@@ -157,6 +157,8 @@ func (s *Storage) ListStudents(ctx context.Context, filter *model.StudentsFilter
 			query = query.Where(sq.Eq{"groupid": *filter.GroupID})
 		}
 	}
+
+	query = query.OrderBy("name ASC")
 
 	var res []*models.Student
 

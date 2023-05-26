@@ -8,6 +8,7 @@ import (
 	"back/graph/model"
 	"back/internal/auth_service"
 	"back/internal/models"
+	"back/pkg/parser"
 	"context"
 	"fmt"
 	"net/http"
@@ -129,7 +130,11 @@ func (r *mutationResolver) LessonCreate(ctx context.Context, input model.LessonC
 		return nil, err
 	}
 
-	// todo:: добавить создание классов по предмету
+	err = parser.AddClassesForLesson(ctx, r.Storage, lesson)
+	if err != nil {
+		return nil, fmt.Errorf("AddClassesForLesson err %w", err)
+	}
+
 	// todo:: добавить создание прогресса по предмету
 	return models.ToLesson(lesson), err
 }
